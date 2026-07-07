@@ -1,0 +1,460 @@
+[
+  {
+    "q": "Quelle est la définition correcte d'une Architecture de Transition au sens du standard TOGAF ?",
+    "options": [
+      "Une architecture qui décrit l'état actuel de l'entreprise avant toute modification.",
+      "Une description formelle d'un état intermédiaire de l'entreprise sur la feuille de route vers l'architecture cible.",
+      "Une spécification logique des composants d'infrastructure réseau.",
+      "Une architecture temporaire utilisée uniquement pendant la phase de test d'un projet."
+    ],
+    "correct": 1,
+    "explanation": "Une architecture de transition décrit l'état de l'entreprise à un point d'étape intermédiaire important, permettant de délivrer une valeur métier incrémentale sur la trajectoire vers l'architecture cible."
+  },
+  {
+    "q": "Parmi les propositions suivantes, laquelle représente l'input (entrant) déclencheur de la Phase A (Vision de l'Architecture) ?",
+    "options": [
+      "Le Document de Définition d'Architecture approuvé.",
+      "La Demande de Travail d'Architecture (Request for Architecture Work).",
+      "Le Plan de mise en œuvre et de migration.",
+      "La Définition du Chantier d'Architecture (Statement of Work)."
+    ],
+    "correct": 1,
+    "explanation": "La Demande de Travail d'Architecture (Request for Architecture Work) émise par les sponsors est l'entrant officiel qui déclenche le démarrage de la Phase A.",
+    "svgKey": "admCycle"
+  },
+  {
+    "q": "Dans le Cadre de Contenu d'Architecture (Content Framework), quel élément décrit les services métiers et les fonctions qu'une organisation peut réaliser ?",
+    "options": [
+      "Les composants technologiques logiques.",
+      "Les flux d'informations logistiques.",
+      "Les Capacités Business (Business Capabilities).",
+      "Les lots de travaux d'infrastructure."
+    ],
+    "correct": 2,
+    "explanation": "Les capacités métiers (Business Capabilities) représentent ce que l'entreprise est capable de faire de façon stable, et font partie des concepts clés du domaine Business du Content Framework.",
+    "svgKey": "contentFramework"
+  },
+  {
+    "q": "Quelle technique de l'ADM permet de comparer l'architecture de référence et l'architecture cible afin de s'assurer qu'aucun besoin n'a été omis ?",
+    "options": [
+      "L'Analyse des Écarts (Gap Analysis).",
+      "L'Analyse des scénarios d'entreprise.",
+      "L'Évaluation de l'état de préparation à la transformation.",
+      "La méthode des compromis d'architecture."
+    ],
+    "correct": 0,
+    "explanation": "L'Analyse des Écarts (Gap Analysis) est une technique fondamentale de l'ADM utilisée pour détecter les éléments manquants (gaps), ajoutés ou supprimés entre la Baseline et la Target."
+  },
+  {
+    "q": "Comment définit-on la relation entre le Continuum d'Architecture et le Continuum de Solutions ?",
+    "options": [
+      "Le Continuum d'Architecture définit les règles logiques tandis que le Continuum de Solutions répertorie les implémentations physiques correspondantes.",
+      "Le Continuum de Solutions précède et alimente obligatoirement le Continuum d'Architecture.",
+      "Ce sont deux concepts totalement indépendants et gérés par des comités distincts.",
+      "Le Continuum de Solutions ne contient que des logiciels Open Source."
+    ],
+    "correct": 0,
+    "explanation": "Le Continuum d'Architecture exprime les spécifications et concepts logiques (les règles et guides), tandis que le Continuum de Solutions montre les implémentations physiques (les produits et systèmes réels) qui y répondent."
+  },
+  {
+    "q": "Quel organe est chargé de définir la portée d'un examen de conformité et de valider les demandes de dérogation ?",
+    "options": [
+      "La direction des ressources humaines.",
+      "Le Bureau de Gestion des Projets (PMO).",
+      "Le Comité d'Architecture (Architecture Board).",
+      "L'équipe de gestion du changement d'infrastructure."
+    ],
+    "correct": 2,
+    "explanation": "Le Comité d'Architecture (Architecture Board) assure la gouvernance globale en validant la conformité et en statuant sur les demandes de dérogation (dispensation).",
+    "svgKey": "architectureCapability"
+  },
+  {
+    "q": "Dans quelle phase de l'ADM s'effectue la consolidation finale des lots de travaux (Work Packages) dans un plan de migration cohérent ?",
+    "options": [
+      "La Phase B (Architecture Business).",
+      "La Phase E (Opportunités et Solutions).",
+      "La Phase F (Planification de la migration).",
+      "La Phase G (Gouvernance de la mise en œuvre)."
+    ],
+    "correct": 2,
+    "explanation": "La Phase F ordonnance et finalise le Plan de mise en œuvre et de migration ainsi que la Feuille de route d'Architecture définitive en collaboration avec les équipes de gestion de portefeuille.",
+    "svgKey": "admCycle"
+  },
+  {
+    "q": "Parmi les critères suivants, lequel qualifie un principe d'architecture comme étant 'robuste' ?",
+    "options": [
+      "Il est simple à comprendre par n'importe quel développeur junior.",
+      "Il permet de prendre des décisions fermes et d'anticiper des situations futures sans être instable.",
+      "Il est rédigé par un cabinet de conseil externe.",
+      "Il change toutes les semaines pour s'adapter aux sprints Agiles."
+    ],
+    "correct": 1,
+    "explanation": "La robustesse d'un principe signifie qu'il est capable de résister aux changements mineurs de contexte et qu'il permet de prendre des décisions d'arbitrage claires et pérennes."
+  },
+  {
+    "q": "Au sens de TOGAF, quelle est la distinction entre une Vue d'Architecture (View) et un Point de Vue d'Architecture (Viewpoint) ?",
+    "options": [
+      "Il n'y a aucune différence, les deux termes sont équivalents.",
+      "La Vue est le modèle vu par le client, le Point de Vue est réservé à l'ingénieur.",
+      "Une Vue est ce que l'on regarde (la représentation du système), et le Point de Vue définit la perspective depuis laquelle on regarde (les règles et filtres pour construire la vue).",
+      "Le Point de Vue est toujours codé en XML et la Vue en HTML."
+    ],
+    "correct": 2,
+    "explanation": "Une Vue (View) est la représentation concrète d'un système pour un groupe de parties prenantes. Le Point de Vue (Viewpoint) est le modèle (ou gabarit) qui définit comment construire et utiliser cette Vue."
+  },
+  {
+    "q": "Où se situe la gestion opérationnelle quotidienne des exigences (Requirements Management) par rapport aux phases de l'ADM ?",
+    "options": [
+      "Elle n'intervient qu'en Phase A.",
+      "Elle s'exécute de façon centralisée et continue, alimentant et étant alimentée par l'ensemble des phases du cycle ADM.",
+      "Elle est gérée uniquement en dehors de l'entreprise par des sous-traitants.",
+      "Elle s'exécute uniquement après la Phase H."
+    ],
+    "correct": 1,
+    "explanation": "La Gestion des Exigences est le processus centralisé qui tourne en continu et interagit avec toutes les phases (A à H) de l'ADM.",
+    "svgKey": "admCycle"
+  },
+  {
+    "q": "Quel niveau de granularité du Paysage d'Architecture fournit une vue d'ensemble globale de l'entreprise pour des arbitrages stratégiques au niveau exécutif ?",
+    "options": [
+      "L'Architecture de Segment.",
+      "L'Architecture de Capacité.",
+      "L'Architecture Stratégique.",
+      "L'Architecture de Fondation."
+    ],
+    "correct": 2,
+    "explanation": "Le Paysage d'Architecture comporte trois niveaux. L'Architecture Stratégique est le niveau le plus haut, offrant une vision de haut niveau nécessaire au pilotage à long terme."
+  },
+  {
+    "q": "Quel bloc de construction d'architecture définit une spécification logique, indépendante de toute implémentation ou produit du marché ?",
+    "options": [
+      "Un Bloc de Construction de Solution (SBB).",
+      "Un Bloc de Construction d'Architecture (ABB).",
+      "Un Composant Technologique Physique.",
+      "Un Contrat d'Architecture de transition."
+    ],
+    "correct": 1,
+    "explanation": "Les ABB (Architecture Building Blocks) décrivent des capacités logiques et des spécifications d'architecture neutres vis-à-vis des éditeurs, tandis que les SBB décrivent les solutions matérielles ou logicielles réelles."
+  },
+  {
+    "q": "Selon TOGAF, quel est le but principal de l'évaluation de la préparation du business à la transformation (Business Transformation Readiness Assessment) ?",
+    "options": [
+      "Vérifier si le budget financier alloué au projet est suffisant.",
+      "Identifier les facteurs de risques humains, culturels et organisationnels afin de lever les freins au changement.",
+      "Auditer la conformité des serveurs par rapport aux directives de sécurité.",
+      "Calculer le nombre d'heures de formation requises pour l'équipe IT."
+    ],
+    "correct": 1,
+    "explanation": "Cette évaluation s'intéresse à l'aptitude culturelle et opérationnelle de l'entreprise à accepter la transformation, pour planifier l'accompagnement au changement nécessaire."
+  },
+  {
+    "q": "Dans quelle phase de l'ADM l'équipe d'architecture réalise-t-elle l'identification initiale des composants candidats pour la feuille de route d'architecture applicative ?",
+    "options": [
+      "La Phase A (Vision).",
+      "La Phase C (Architectures des Systèmes d'Information).",
+      "La Phase E (Opportunités et Solutions).",
+      "La Phase G (Gouvernance)."
+    ],
+    "correct": 1,
+    "explanation": "La Phase C couvre l'élaboration des architectures de données et d'applications, incluant l'identification des composants candidats de la feuille de route pour ces domaines.",
+    "svgKey": "admCycle"
+  },
+  {
+    "q": "Quelle partie du standard TOGAF fournit des guides thématiques détaillés pour adapter l'ADM à des contextes spécifiques comme la sécurité, l'agilité ou le cloud ?",
+    "options": [
+      "Les White Papers de l'Open Group.",
+      "Le TOGAF® Fundamental Content.",
+      "Les TOGAF® Series Guides.",
+      "Les spécifications d'outils CASE."
+    ],
+    "correct": 2,
+    "explanation": "Les TOGAF Series Guides contiennent des guides de bonnes pratiques thématiques qui complètent le cœur du standard (Fundamental Content) pour l'adapter à divers contextes métiers et techniques."
+  },
+  {
+    "q": "Qu'est-ce qu'une Dérogation d'Architecture (Dispensation) ?",
+    "options": [
+      "Une amende financière infligée à un projet non conforme.",
+      "Une autorisation formelle et temporaire accordée à un projet pour dévier des règles de l'architecture cible.",
+      "Le remplacement d'un architecte par un chef de projet.",
+      "Une phase bonus de l'ADM qui s'exécute uniquement le week-end."
+    ],
+    "correct": 1,
+    "explanation": "Une dispensation (dérogation) est accordée par le Comité d'Architecture lorsqu'un projet démontre qu'il ne peut pas respecter la cible pour des contraintes techniques ou financières justifiées."
+  },
+  {
+    "q": "Quel est l'un des rôles majeurs du Référentiel d'Architecture au sein d'une entreprise ?",
+    "options": [
+      "Héberger l'ensemble des bases de données de production de l'entreprise.",
+      "Stocker, classer et organiser les actifs, modèles, guides et livrables d'architecture produits par l'ADM pour favoriser leur réutilisation.",
+      "Suivre en temps réel les pannes de serveurs physiques.",
+      "Gérer les contrats d'embauche des ingénieurs informatiques."
+    ],
+    "correct": 1,
+    "explanation": "Le Référentiel d'Architecture stocke toutes les informations et modèles architecturaux de l'entreprise à différents niveaux de généralité pour permettre leur partage et leur gouvernance.",
+    "svgKey": "architectureCapability"
+  },
+  {
+    "q": "Dans le métamodèle de contenu de TOGAF, quelle entité décrit un groupe de fonctionnalités logicielles autonomes qui fournissent un service métier spécifique ?",
+    "options": [
+      "Le Composant Applicatif Logique (Logical Application Component).",
+      "L'Entité de Données (Data Entity).",
+      "Le Flux de Valeur (Value Stream).",
+      "Le Rôle d'acteur."
+    ],
+    "correct": 0,
+    "explanation": "Un composant applicatif logique décrit une encapsulation de fonctionnalités applicatives (ex: un module de facturation) de manière abstraite et indépendante du progiciel physique choisi.",
+    "svgKey": "contentFramework"
+  },
+  {
+    "q": "Quelle affirmation est correcte concernant l'adaptation de l'ADM à une organisation ?",
+    "options": [
+      "L'ADM doit être appliquée de manière stricte et linéaire, sans aucune modification.",
+      "Chaque organisation doit adapter l'ADM pour qu'elle s'aligne sur sa propre culture, ses autres cadres de gestion et sa gouvernance.",
+      "L'adaptation de l'ADM est interdite par la licence de l'Open Group.",
+      "L'adaptation se limite uniquement au changement des logos des documents."
+    ],
+    "correct": 1,
+    "explanation": "TOGAF insiste sur le fait que l'ADM est un cadre flexible et générique qui doit être adapté pour s'intégrer harmonieusement avec les processus et outils propres à chaque entreprise."
+  },
+  {
+    "q": "Qu'est-ce qu'un Lot de Travaux (Work Package) dans le cadre de la planification de la migration ?",
+    "options": [
+      "Un ensemble d'ordinateurs portables livrés aux nouveaux employés.",
+      "Un ensemble d'activités de mise en œuvre cohésives, identifiées pour réaliser tout ou partie d'une transition ou d'une cible.",
+      "Une base de données compressée.",
+      "Un contrat signé avec un fournisseur de cloud public."
+    ],
+    "correct": 1,
+    "explanation": "Un lot de travaux regroupe un ensemble d'actions de développement ou de déploiement cohérentes constituant une brique d'exécution du plan de migration."
+  },
+  {
+    "q": "Dans le canvas des principes d'architecture, à quoi sert la section 'Justification' (Rationale) ?",
+    "options": [
+      "À lister les outils logiciels nécessaires pour appliquer le principe.",
+      "À expliquer la valeur business et le bénéfice pour l'entreprise découlant du respect de ce principe.",
+      "À identifier les sanctions en cas de non-respect du principe.",
+      "À nommer l'auteur qui a rédigé la règle."
+    ],
+    "correct": 1,
+    "explanation": "La section 'Justification' (Rationale) décrit les gains métiers ou opérationnels obtenus si l'on applique le principe, légitimant son existence."
+  },
+  {
+    "q": "Pendant quelle phase de l'ADM examine-t-on pour la première fois les différentes options de solutions techniques (SBB) pour concrétiser les architectures logiques ?",
+    "options": [
+      "La Phase A (Vision de l'Architecture).",
+      "La Phase E (Opportunités et Solutions).",
+      "La Phase G (Gouvernance de la mise en œuvre).",
+      "La Phase H (Gestion des changements)."
+    ],
+    "correct": 1,
+    "explanation": "C'est en Phase E que l'on commence à regarder comment implémenter concrètement les architectures cibles logiques (ABB) sous forme de solutions physiques (SBB).",
+    "svgKey": "admCycle"
+  },
+  {
+    "q": "Quelle technique recommandée par TOGAF permet de s'assurer que les priorités des parties prenantes sont équilibrées lorsqu'on évalue plusieurs options d'architectures alternatives ?",
+    "options": [
+      "L'Analyse d'Impact (Impact Analysis).",
+      "La méthode d'Analyse des Compromis (Trade-off Analysis).",
+      "Le Business Transformation Assessment.",
+      "La Matrice d'Attribution RACI."
+    ],
+    "correct": 1,
+    "explanation": "L'analyse des compromis (Trade-off Analysis) permet d'évaluer plusieurs solutions candidates au regard de critères pondérés représentant les exigences parfois divergentes des parties prenantes."
+  },
+  {
+    "q": "Comment le standard TOGAF qualifie-t-il l'ensemble des éléments d'architecture qui sont spécifiques à un secteur d'activité particulier (ex: la banque, la santé, les télécoms) ?",
+    "options": [
+      "Les Architectures de Fondation.",
+      "Les Architectures de Systèmes Communs.",
+      "Les Architectures de l'Industrie (Industry Architectures).",
+      "Les Architectures Spécifiques à l'Organisation."
+    ],
+    "correct": 2,
+    "explanation": "Le Continuum d'Entreprise classe les briques par niveau de généricité. Les Architectures de l'Industrie contiennent des modèles de référence et standards propres à un domaine d'activité."
+  },
+  {
+    "q": "Quelle phase de l'ADM est principalement axée sur la mise en œuvre de la gouvernance de l'implémentation de la solution par les équipes de développement ?",
+    "options": [
+      "La Phase F (Planification de la migration).",
+      "La Phase G (Gouvernance de la mise en œuvre).",
+      "La Phase H (Gestion des changements).",
+      "La Phase Préliminaire."
+    ],
+    "correct": 1,
+    "explanation": "La Phase G assure que les projets de mise en œuvre respectent scrupuleusement les spécifications architecturales cibles par des contrôles de gouvernance.",
+    "svgKey": "admCycle"
+  },
+  {
+    "q": "Au sens de TOGAF, quel est le livrable principal rédigé à la Phase A pour donner une vision synthétique et vulgarisée du projet aux décideurs ?",
+    "options": [
+      "Le Document de Définition d'Architecture.",
+      "Le Document de Vision d'Architecture (Architecture Vision).",
+      "La Feuille de Route d'Architecture.",
+      "Le Registre des Risques."
+    ],
+    "correct": 1,
+    "explanation": "Le document de Vision d'Architecture (Phase A) fournit un résumé de haut niveau, vulgarisé et impactant, destiné à obtenir l'adhésion des décideurs métiers et IT pour le cycle en cours."
+  },
+  {
+    "q": "Quel concept du Cadre de Contenu de TOGAF décrit un flux transverse d'activités qui génère de la valeur pour un client ou un utilisateur externe ?",
+    "options": [
+      "Le Flux de Valeur (Value Stream).",
+      "La Capacité Business (Business Capability).",
+      "L'Entité de Données (Data Entity).",
+      "La Matrice d'interaction applicative."
+    ],
+    "correct": 0,
+    "explanation": "Un flux de valeur (Value Stream) décrit l'enchaînement d'étapes de bout en bout nécessaires pour délivrer de la valeur à une partie prenante.",
+    "svgKey": "contentFramework"
+  },
+  {
+    "q": "Quel type d'architecture du Paysage d'Architecture s'intéresse à une fonction métier ou technologique très précise, comme la gestion des accès ou le paiement en ligne ?",
+    "options": [
+      "L'Architecture Stratégique.",
+      "L'Architecture de Segment.",
+      "L'Architecture de Capacité (Capability Architecture).",
+      "L'Architecture de Fondation."
+    ],
+    "correct": 2,
+    "explanation": "L'Architecture de Capacité est le niveau de granularité le plus fin du Paysage d'Architecture, centré sur la spécification détaillée d'une capacité ou d'un service précis."
+  },
+  {
+    "q": "Qu'est-ce qu'un Contrat d'Architecture (Architecture Contract) au sens de la Phase G ?",
+    "options": [
+      "Un accord signé avec un fournisseur de matériel informatique.",
+      "Un contrat d'embauche pour l'architecte en chef.",
+      "Un accord formalisé entre l'organisme commanditaire et l'équipe de mise en œuvre, fixant les objectifs et règles de conformité à respecter.",
+      "Une police d'assurance couvrant les pannes logicielles."
+    ],
+    "correct": 2,
+    "explanation": "Le Contrat d'Architecture est un outil de gouvernance signé qui engage les équipes de développement (réalisateur) à respecter l'architecture cible spécifiée."
+  },
+  {
+    "q": "Quelle phase de l'ADM est chargée de surveiller les innovations technologiques et les évolutions de la stratégie de l'entreprise pour déterminer s'il faut lancer un nouveau cycle ADM ?",
+    "options": [
+      "La Phase Préliminaire.",
+      "La Phase E (Opportunités et Solutions).",
+      "La Phase H (Gestion des changements d'architecture).",
+      "La Phase de Gestion des Exigences."
+    ],
+    "correct": 2,
+    "explanation": "La Phase H assure que l'architecture continue de répondre aux besoins changeants de l'entreprise et arbitre si un changement nécessite un nouveau cycle de développement complet (nouveau cycle ADM).",
+    "svgKey": "admCycle"
+  },
+  {
+    "q": "Quelle affirmation concernant le partitionnement d'architecture dans une grande entreprise est correcte selon TOGAF ?",
+    "options": [
+      "Le partitionnement est réservé uniquement aux petites start-ups.",
+      "Il permet de découper l'architecture globale en morceaux (partitions) gérables indépendamment par différentes équipes d'architecture.",
+      "Le standard TOGAF impose d'utiliser une seule partition pour toute l'entreprise.",
+      "Le partitionnement ne s'applique qu'aux bases de données SQL."
+    ],
+    "correct": 1,
+    "explanation": "Le partitionnement est une technique essentielle pour diviser le travail d'architecture d'une grande organisation en zones autonomes et cohérentes (par segments ou capacités)."
+  },
+  {
+    "q": "Dans le métamodèle de contenu de TOGAF, quelle est la définition d'un Acteur (Actor) ?",
+    "options": [
+      "Une machine de traitement informatique.",
+      "Une personne, une organisation ou un système externe qui interagit avec l'entreprise.",
+      "Un logiciel de simulation de tests de charge.",
+      "Le sponsor financier du projet."
+    ],
+    "correct": 1,
+    "explanation": "Un Acteur représente un sujet (personne physique, unité organisationnelle ou système tiers connecté) qui effectue des actions ou consomme des services."
+  },
+  {
+    "q": "Comment TOGAF définit-il la différence entre une Capacité Business (Business Capability) et un Flux de Valeur (Value Stream) ?",
+    "options": [
+      "Il n'y a aucune différence entre ces deux notions.",
+      "La Capacité décrit 'ce que' l'entreprise sait faire, tandis que le Flux de Valeur décrit 'comment' elle génère de la valeur à travers des processus transverses.",
+      "La Capacité s'applique uniquement à l'informatique et le Flux de Valeur uniquement au commerce.",
+      "La Capacité est temporaire et le Flux de Valeur est permanent."
+    ],
+    "correct": 1,
+    "explanation": "La Capacité métier (Business Capability) est une aptitude stable (le 'quoi'), tandis que le Flux de Valeur (Value Stream) organise la délivrance concrète de valeur (le 'comment').",
+    "svgKey": "contentFramework"
+  },
+  {
+    "q": "Dans quelle phase de l'ADM valide-t-on définitivement le Plan de mise en œuvre et de migration avec l'ensemble des parties prenantes clés ?",
+    "options": [
+      "La Phase E (Opportunités et Solutions).",
+      "La Phase F (Planification de la migration).",
+      "La Phase G (Gouvernance de la mise en œuvre).",
+      "La Phase H (Gestion des changements)."
+    ],
+    "correct": 1,
+    "explanation": "La Phase F finalise et obtient l'approbation du Plan de mise en œuvre et de migration ordonnancé après évaluation des coûts, risques et bénéfices avec les parties prenantes.",
+    "svgKey": "admCycle"
+  },
+  {
+    "q": "Quel type d'architecture du Continuum d'Entreprise représente des composants d'infrastructure fondamentaux et universels, comme un système d'exploitation ou un réseau de base ?",
+    "options": [
+      "L'Architecture de Fondation (Foundation Architecture).",
+      "L'Architecture de Systèmes Communs.",
+      "L'Architecture de l'Industrie.",
+      "L'Architecture Spécifique à l'Organisation."
+    ],
+    "correct": 0,
+    "explanation": "L'Architecture de Fondation contient les briques technologiques les plus génériques et universelles (ex: l'infrastructure de réseau ou de système de base) réutilisables partout."
+  },
+  {
+    "q": "Quelle technique de l'ADM permet de s'assurer que les exigences fonctionnelles et non-fonctionnelles d'un projet sont suivies, validées et priorisées tout au long du cycle ?",
+    "options": [
+      "L'Analyse d'Impact.",
+      "Le processus de Gestion des Exigences (Requirements Management).",
+      "L'Analyse des Écarts (Gap Analysis).",
+      "Le partitionnement d'architecture."
+    ],
+    "correct": 1,
+    "explanation": "Le processus de Gestion des Exigences est responsable de l'enregistrement, du tri et du suivi permanent des exigences à chaque étape de l'ADM.",
+    "svgKey": "admCycle"
+  },
+  {
+    "q": "Dans le Cadre de Gouvernance d'Architecture, quel document est émis par l'équipe projet pour signaler une non-conformité mineure qui ne bloque pas le projet mais nécessite un suivi ?",
+    "options": [
+      "Une Demande de Dérogation (Dispensation).",
+      "Une Demande de Changement (Change Request).",
+      "Un constat de conformité avec réserve.",
+      "Un avenant budgétaire."
+    ],
+    "correct": 2,
+    "explanation": "Lors des revues de conformité, l'évaluation peut déboucher sur un statut 'conforme avec réserve' pour consigner des déviations acceptées temporairement ou sous conditions.",
+    "svgKey": "architectureCapability"
+  },
+  {
+    "q": "Parmi les options suivantes, quel est l'objectif principal de la Phase Préliminaire de l'ADM ?",
+    "options": [
+      "Rédiger la Vision d'Architecture de la cible.",
+      "Établir la capacité d'architecture de l'organisation, définir la gouvernance et valider les outils de modélisation à utiliser.",
+      "Choisir le fournisseur de cloud public.",
+      "Coder les composants applicatifs logiques."
+    ],
+    "correct": 1,
+    "explanation": "La Phase Préliminaire prépare le terrain en définissant l'organisation de l'équipe d'architecture, la gouvernance de l'AE et les outils indispensables avant d'entamer les cycles ADM.",
+    "svgKey": "admCycle"
+  },
+  {
+    "q": "Où sont répertoriés les standards technologiques et les profils de conformité imposés aux développeurs au sein du Référentiel d'Architecture ?",
+    "options": [
+      "Dans le Continuum d'Entreprise.",
+      "Dans la Bibliothèque de Standards (Standards Information Base - SIB).",
+      "Dans le Paysage d'Architecture.",
+      "Dans le Métamodèle de Contenu."
+    ],
+    "correct": 1,
+    "explanation": "La Standards Information Base (SIB) est la zone du Référentiel d'Architecture qui liste l'ensemble des standards technologiques et standards de l'industrie adoptés par l'organisation."
+  },
+  {
+    "q": "Quel élément du standard TOGAF décrit de manière formelle les types d'objets d'architecture à créer (ex: acteurs, applications, serveurs) et leurs relations croisées ?",
+    "options": [
+      "Le Métamodèle de Contenu (Content Metamodel).",
+      "Le Continuum d'Entreprise.",
+      "La Standards Information Base (SIB).",
+      "La méthode de gestion des compromis."
+    ],
+    "correct": 0,
+    "explanation": "Le Métamodèle de Contenu définit précisément la structure des concepts (classes d'objets) et leurs relations pour assurer un référentiel d'architecture cohérent et standardisé.",
+    "svgKey": "contentFramework"
+  }
+]
