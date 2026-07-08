@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Examen Blanc TOGAF OGEA-F101</title>
+    <title>Examen Blanc TOGAF OGEA-F101 & Dashboard</title>
     <!-- Chargement de Tailwind CSS pour un design moderne et adaptatif -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -94,10 +94,25 @@
                     <h1 class="text-3xl font-bold text-[#0C419A]">TOGAF EA® Foundation</h1>
                     <h2 class="text-lg opacity-75">Entraînement Examen Part 1 (OGEA-F101)</h2>
                 </div>
-                <!-- Bouton d'accès aux configurations -->
-                <button onclick="toggleConfigModal(true)" class="p-3 card rounded-full hover:bg-gray-100 transition-all shadow-sm" title="Menu Configuration">
-                    ⚙️
-                </button>
+                <div class="flex gap-2">
+                    <!-- Bouton Tableau de Bord -->
+                    <button onclick="openDashboard()" class="px-4 py-2 bg-[#E7ECF5] text-[#0C419A] rounded-lg font-semibold hover:bg-opacity-80 transition" title="Tableau de Bord">
+                        📊 Progrès & Badges
+                    </button>
+                    <!-- Bouton d'accès aux configurations -->
+                    <button onclick="toggleConfigModal(true)" class="p-3 card rounded-full hover:bg-gray-100 transition-all shadow-sm" title="Menu Configuration">
+                        ⚙️
+                    </button>
+                </div>
+            </div>
+
+            <!-- Personnalisation du Profil -->
+            <div class="card p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
+                <div class="space-y-1">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-[#006386]">Votre Identité d'Architecte</label>
+                    <p class="text-xs text-gray-500">Saisissez votre nom pour personnaliser vos badges officiels d'entraînement.</p>
+                </div>
+                <input type="text" id="user-display-name" oninput="saveDisplayName(this.value)" placeholder="Ex: Jean Dupont, Architecte d'Entreprise" class="w-full md:w-80 p-2.5 border rounded-lg text-sm focus:border-[#0C419A]">
             </div>
 
             <!-- Bouton de reprise d'examen si actif -->
@@ -228,13 +243,104 @@
             <p class="text-sm text-gray-500 max-w-md mx-auto">
                 Le score de passage recommandé est de 60% (soit un minimum de 24 bonnes réponses sur 40).
             </p>
-            <div class="pt-4">
+            <div class="flex flex-wrap justify-center gap-3 pt-4">
+                <button id="generate-badge-btn" onclick="generateAndOpenBadge()" class="btn-secondary px-8 py-3 rounded-lg font-bold shadow">
+                    🥇 Générer mon Badge de Réussite
+                </button>
                 <button onclick="resetAppToHome()" class="btn-primary px-8 py-3 rounded-lg font-bold shadow">
                     Retourner à l'accueil
                 </button>
             </div>
         </div>
 
+        <!-- TABLEAU DE BORD DES PROGRÈS -->
+        <div id="dashboard-screen" class="hidden space-y-8 py-6">
+            <div class="flex justify-between items-center border-b pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-[#0C419A]">📊 Mon Espace de Progrès</h2>
+                    <p class="text-sm text-gray-500">Suivi d'avancement et de réussite OGEA-F101</p>
+                </div>
+                <button onclick="closeDashboard()" class="px-4 py-2 btn-outline rounded-lg text-sm font-semibold">
+                    ✕ Fermer le Dashboard
+                </button>
+            </div>
+
+            <!-- Grille de KPIs -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="card p-4 rounded-xl text-center">
+                    <span class="text-2xl">📝</span>
+                    <h4 class="text-sm font-bold text-gray-500 uppercase mt-1">Tentatives</h4>
+                    <p id="kpi-attempts" class="text-3xl font-bold text-[#0C419A] mt-1">0</p>
+                </div>
+                <div class="card p-4 rounded-xl text-center">
+                    <span class="text-2xl">🎯</span>
+                    <h4 class="text-sm font-bold text-gray-500 uppercase mt-1">Score Moyen</h4>
+                    <p id="kpi-avg" class="text-3xl font-bold text-[#0C419A] mt-1">0%</p>
+                </div>
+                <div class="card p-4 rounded-xl text-center">
+                    <span class="text-2xl">🏆</span>
+                    <h4 class="text-sm font-bold text-gray-500 uppercase mt-1">Taux de Réussite</h4>
+                    <p id="kpi-success-rate" class="text-3xl font-bold text-emerald-600 mt-1">0%</p>
+                </div>
+                <div class="card p-4 rounded-xl text-center">
+                    <span class="text-2xl">🔥</span>
+                    <h4 class="text-sm font-bold text-gray-500 uppercase mt-1">Meilleur Score</h4>
+                    <p id="kpi-best" class="text-3xl font-bold text-[#006386] mt-1">0/40</p>
+                </div>
+            </div>
+
+            <!-- Graphique de progression et Liste des passages -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Graphique de progression (Canvas) -->
+                <div class="card p-5 rounded-xl md:col-span-1 space-y-4">
+                    <h3 class="text-md font-bold uppercase text-[#0C419A]">Progression Temporelle</h3>
+                    <div class="flex items-center justify-center bg-white border rounded-xl p-2 h-48 relative">
+                        <canvas id="progress-canvas" class="w-full h-full"></canvas>
+                        <p id="no-chart-data" class="absolute text-xs text-gray-400">Aucun historique disponible pour tracer le graphique.</p>
+                    </div>
+                </div>
+
+                <!-- Liste des passages -->
+                <div class="card p-5 rounded-xl md:col-span-2 space-y-4 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-md font-bold uppercase text-[#0C419A]">Historique des Sessions</h3>
+                        <div id="attempts-list" class="space-y-3 max-h-56 overflow-y-auto pr-1 text-sm mt-3">
+                            <p class="text-xs text-gray-400 italic">Aucune tentative enregistrée pour le moment. Lancez un examen pour voir vos résultats apparaître !</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL DU BADGE DE RÉUSSITE -->
+    <div id="badge-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-6 text-center">
+            <div class="flex justify-between items-center border-b pb-3 text-left">
+                <h3 class="text-lg font-bold text-[#0C419A]">🥇 Votre Badge de Réussite</h3>
+                <button onclick="toggleBadgeModal(false)" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+            </div>
+            
+            <p class="text-xs text-gray-500">
+                Félicitations pour votre réussite. Voici votre badge officiel d'entraînement TOGAF OGEA-F101 généré à la volée.
+            </p>
+
+            <!-- Rendu du Badge (Canvas invisible de rendu, et l'image d'affichage) -->
+            <div class="flex justify-center">
+                <canvas id="badge-canvas" width="400" height="400" class="hidden"></canvas>
+                <img id="badge-preview-img" alt="Badge TOGAF" class="max-w-xs rounded-xl shadow-lg border">
+            </div>
+
+            <div class="flex justify-center gap-3">
+                <button onclick="downloadBadgeImage()" class="btn-primary px-6 py-2 rounded-lg text-sm font-medium shadow">
+                    📥 Télécharger le Badge (PNG)
+                </button>
+                <button onclick="shareBadgeProgress()" class="btn-outline px-6 py-2 rounded-lg text-sm font-medium">
+                    🔗 Créer un lien public de partage
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL DE CONFIGURATION -->
@@ -264,7 +370,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMATION DE NOUVEAU QUIZ (Si un quiz est en cours) -->
+    <!-- MODAL DE CONFIRMATION DE NOUVEAU QUIZ -->
     <div id="confirm-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <h3 class="text-lg font-bold text-red-600">⚠️ Abandonner la session en cours ?</h3>
@@ -278,10 +384,163 @@
         </div>
     </div>
 
+    <!-- MODAL DE PARTAGE PUBLIC -->
+    <div id="share-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-center">
+            <h3 class="text-lg font-bold text-[#0C419A]">🔗 Lien de Partage Public Créé</h3>
+            <p class="text-sm text-gray-600">
+                Votre réussite est maintenant enregistrée sur le cloud. Copiez ce lien de vérification officiel pour le partager avec vos contacts :
+            </p>
+            <div class="flex gap-2">
+                <input type="text" id="share-url-text" readonly class="w-full p-2 border rounded-lg text-xs font-mono bg-gray-50">
+                <button onclick="copyShareUrl()" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium">Copier</button>
+            </div>
+            <div class="pt-2">
+                <button onclick="toggleShareModal(false)" class="btn-outline px-6 py-2 rounded-lg text-sm font-medium">Fermer</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="w-full text-center py-4 border-t text-xs text-gray-400 bg-[#F9F9F9]">
         TOGAF® Enterprise Architecture Simulator (OGEA-F101) - Entraînement en Français
     </footer>
+
+    <!-- Integration Firebase pour sauvegarder de manière persistante -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Configuration Globale Firestore
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'togaf-sim-default';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db = null;
+        let auth = null;
+        let userOnline = false;
+
+        // Tenter d'initialiser Firebase
+        async function initFirebase() {
+            if (!firebaseConfig) {
+                console.log("Firebase config not available. Running in local fallback mode (localStorage).");
+                loadAttemptsFromLocalStorage();
+                return;
+            }
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Priorité à l'auth par token d'intégration avant anonyme (RULE 3)
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                userOnline = true;
+                console.log("Firebase connected successfully as uid:", auth.currentUser.uid);
+                await loadAttemptsFromFirestore();
+            } catch (error) {
+                console.error("Firebase connection error. Falling back to offline mode:", error);
+                loadAttemptsFromLocalStorage();
+            }
+        }
+
+        // Chargement depuis Firestore (RULE 2: Pas de orderBy, trié localement en mémoire JS)
+        async function loadAttemptsFromFirestore() {
+            if (!userOnline || !db || !auth.currentUser) return;
+            try {
+                const attemptsRef = collection(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'attempts');
+                const querySnapshot = await getDocs(attemptsRef);
+                const loadedAttempts = [];
+                querySnapshot.forEach((doc) => {
+                    loadedAttempts.push({ id: doc.id, ...doc.data() });
+                });
+                // Tri en mémoire locale par date décroissante
+                loadedAttempts.sort((a, b) => b.timestamp - a.timestamp);
+                window.attemptsHistory = loadedAttempts;
+                updateDashboardUI();
+            } catch (err) {
+                console.error("Error loading attempts from firestore:", err);
+                loadAttemptsFromLocalStorage();
+            }
+        }
+
+        // Sauvegarde d'un passage dans Firestore ou stockage local de secours
+        async function saveAttemptToStore(attemptData) {
+            window.attemptsHistory.unshift(attemptData); // Ajout local immédiat
+            updateDashboardUI();
+
+            if (userOnline && db && auth.currentUser) {
+                try {
+                    const attemptsRef = collection(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'attempts');
+                    await addDoc(attemptsRef, attemptData);
+                    console.log("Attempt successfully saved to Cloud.");
+                } catch (e) {
+                    console.error("Failed to save attempt online:", e);
+                    saveAttemptToLocalStorage(attemptData);
+                }
+            } else {
+                saveAttemptToLocalStorage(attemptData);
+            }
+        }
+
+        // Publier un badge pour le partage public
+        async function publishBadgeToCloud(badgeId, badgeData) {
+            if (userOnline && db && auth.currentUser) {
+                try {
+                    const badgeDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'badges', badgeId);
+                    await setDoc(badgeDocRef, badgeData);
+                    console.log("Badge published successfully to public cloud directory.");
+                    return true;
+                } catch (e) {
+                    console.error("Failed to publish badge to cloud:", e);
+                }
+            }
+            return false;
+        }
+
+        // Chargement du badge partagé s'il est présent dans l'URL
+        async function loadSharedBadgeFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const badgeId = urlParams.get('badge');
+            if (badgeId && firebaseConfig) {
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    const localDb = getFirestore(app);
+                    const badgeDocRef = doc(localDb, 'artifacts', appId, 'public', 'data', 'badges', badgeId);
+                    
+                    // Chargement asynchrone non-bloquant
+                    setTimeout(async () => {
+                        const snap = await getDoc(badgeDocRef);
+                        if (snap.exists()) {
+                            const data = snap.data();
+                            showToast(`Badge public validé : félicitations à ${data.name} !`, "success");
+                            // Déclencher le rendu du badge à l'écran
+                            renderBadgeOnCanvas(data.name, data.score, data.difficulty, data.date);
+                            toggleBadgeModal(true);
+                        }
+                    }, 500);
+                } catch (e) {
+                    console.error("Failed to check shared badge from url:", e);
+                }
+            }
+        }
+
+        // Initier au démarrage de la page
+        window.addEventListener('DOMContentLoaded', async () => {
+            await initFirebase();
+            await loadSharedBadgeFromUrl();
+        });
+
+        // Exposer les méthodes d'accès cloud au scope global d'origine
+        window.saveAttemptToStore = saveAttemptToStore;
+        window.publishBadgeToCloud = publishBadgeToCloud;
+    </script>
 
     <!-- CODE APPLICATIF JAVASCRIPT -->
     <script>
@@ -842,25 +1101,29 @@
             isPaused: false              // Indique si le chrono est en pause
         };
 
-        // Sauvegarde locale in-memory d'un examen mis en pause pour pouvoir le reprendre
+        // Historique en mémoire locale globale si Firebase déconnecté
+        window.attemptsHistory = [];
         let pausedExamBackup = null;
 
         window.onload = function() {
-            // Chargement des préférences locales de chemins si enregistrées préalablement
+            // Chargement des préférences locales de chemins
             const savedPaths = localStorage.getItem('togaf_config_paths');
             if (savedPaths) {
                 configPaths = JSON.parse(savedPaths);
             }
-            // Mettre à jour les champs de la modal
             document.getElementById('url-easy').value = configPaths.easy;
             document.getElementById('url-medium').value = configPaths.medium;
 
-            // Initialiser les boutons de sélection visuelle sur l'accueil
+            // Charger le nom d'affichage s'il existe
+            const savedName = localStorage.getItem('togaf_display_name');
+            if (savedName) {
+                document.getElementById('user-display-name').value = savedName;
+            }
+
             selectDifficulty(appState.selectedDifficulty);
             selectMode(appState.selectedMode);
         };
 
-        // Notification Toast personnalisée
         function showToast(message, type = 'info') {
             const toast = document.getElementById('toast-notification');
             const toastMsg = document.getElementById('toast-message');
@@ -880,7 +1143,6 @@
             setTimeout(() => { toast.classList.add('hidden'); }, 4000);
         }
 
-        // Commande d'affichage des Modals
         function toggleConfigModal(show) {
             document.getElementById('config-modal').classList.toggle('hidden', !show);
         }
@@ -889,21 +1151,33 @@
             document.getElementById('confirm-modal').classList.toggle('hidden', !show);
         }
 
-        // Sauvegarde des chemins de configurations
+        function toggleBadgeModal(show) {
+            document.getElementById('badge-modal').classList.toggle('hidden', !show);
+        }
+
+        function toggleShareModal(show) {
+            document.getElementById('share-modal').classList.toggle('hidden', !show);
+        }
+
+        function saveDisplayName(val) {
+            localStorage.setItem('togaf_display_name', val.trim());
+        }
+
+        function getDisplayName() {
+            return document.getElementById('user-display-name').value.trim() || "Candidat TOGAF®";
+        }
+
         function saveConfigPaths() {
             configPaths.easy = document.getElementById('url-easy').value.trim();
             configPaths.medium = document.getElementById('url-medium').value.trim();
             localStorage.setItem('togaf_config_paths', JSON.stringify(configPaths));
-            
-            showToast("Configurations enregistrées avec succès !", "success");
+            showToast("Configurations enregistrées !", "success");
             toggleConfigModal(false);
         }
 
-        // Sélection visuelle de la difficulté
         function selectDifficulty(diff) {
             appState.selectedDifficulty = diff;
             const btnIds = { 'easy': 'diff-easy-btn', 'medium': 'diff-medium-btn', 'hard': 'diff-hard-btn' };
-            
             for (let k in btnIds) {
                 const el = document.getElementById(btnIds[k]);
                 if (k === diff) {
@@ -914,11 +1188,9 @@
             }
         }
 
-        // Sélection visuelle du mode
         function selectMode(mode) {
             appState.selectedMode = mode;
             const btnIds = { 'standard': 'mode-standard-btn', 'interactive': 'mode-interactive-btn' };
-            
             for (let m in btnIds) {
                 const el = document.getElementById(btnIds[m]);
                 if (m === mode) {
@@ -929,7 +1201,6 @@
             }
         }
 
-        // Démarrer l'examen après confirmation (évite d'écraser un examen en cours par mégarde)
         function confirmAndStart() {
             if (appState.isExamActive && !appState.isPaused) {
                 toggleConfirmModal(true);
@@ -942,112 +1213,91 @@
 
         function forceStartNewExam() {
             toggleConfirmModal(false);
-            pausedExamBackup = null; // Oublier l'ancien backup
+            pausedExamBackup = null;
             document.getElementById('resume-container').classList.add('hidden');
             loadAndStartExam();
         }
 
-        // Chargement asynchrone des données
         async function loadAndStartExam() {
             let questionsLoaded = [];
-            
             if (appState.selectedDifficulty === 'hard') {
-                // Charger le set d'examen difficile embarqué en local
                 questionsLoaded = [...DIFFICULT_QUESTIONS];
             } else {
-                // Déterminer l'URL selon la sélection
                 const targetUrl = configPaths[appState.selectedDifficulty];
                 try {
                     const response = await fetch(targetUrl);
-                    if (!response.ok) {
-                        throw new Error(`Erreur HTTP : ${response.status}`);
-                    }
+                    if (!response.ok) throw new Error(`Erreur HTTP : ${response.status}`);
                     const data = await response.json();
                     if (Array.isArray(data) && data.length > 0) {
                         questionsLoaded = data;
                     } else {
-                        throw new Error("Le format du JSON reçu n'est pas un tableau valide.");
+                        throw new Error("Le format du JSON n'est pas valide.");
                     }
                 } catch (error) {
                     console.error(error);
-                    showToast(`Échec du chargement du fichier JSON (${targetUrl}). Vérifiez vos fichiers ou configurez l'URL dans les paramètres.`, "error");
+                    showToast(`Échec du chargement du fichier JSON (${targetUrl}). Vérifiez vos fichiers ou configurez l'URL.`, "error");
                     return;
                 }
             }
 
-            // Démarrage effectif du quiz
             appState.questions = questionsLoaded;
             appState.answers = new Array(questionsLoaded.length).fill(null);
             appState.validated = new Array(questionsLoaded.length).fill(false);
             appState.currentIdx = 0;
             appState.score = 0;
-            appState.timeLeft = Math.round(questionsLoaded.length * 90); // 1.5 minute par question
+            appState.timeLeft = Math.round(questionsLoaded.length * 90);
             appState.isExamActive = true;
             appState.isPaused = false;
 
             document.getElementById('total-q-num').innerText = questionsLoaded.length;
-            
-            // Appliquer l'affichage du badge de difficulté
-            const badge = document.getElementById('quiz-difficulty-badge');
-            badge.innerText = `Difficulté : ${appState.selectedDifficulty.toUpperCase()}`;
+            document.getElementById('quiz-difficulty-badge').innerText = `Difficulté : ${appState.selectedDifficulty.toUpperCase()}`;
 
-            // Changement d'écran
             document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('dashboard-screen').classList.add('hidden');
             document.getElementById('quiz-screen').classList.remove('hidden');
             document.getElementById('result-screen').classList.add('hidden');
 
             loadQuestion();
             startTimer();
-            showToast("Bonne chance ! Examen démarré.", "success");
+            showToast("Nouvel examen démarré.", "success");
         }
 
-        // Pause et retour à l'écran d'accueil
         function pauseAndGoHome() {
             clearInterval(appState.timerInterval);
             appState.isPaused = true;
-            
-            // Créer une sauvegarde locale en mémoire
             pausedExamBackup = { ...appState };
 
-            // Configurer le bloc d'alerte de reprise sur l'accueil
             document.getElementById('resume-difficulty-text').innerText = appState.selectedDifficulty.toUpperCase();
             document.getElementById('resume-progress-text').innerText = `${appState.currentIdx + 1} / ${appState.questions.length}`;
             document.getElementById('resume-container').classList.remove('hidden');
 
-            // Retourner visuellement à l'accueil
             document.getElementById('quiz-screen').classList.add('hidden');
             document.getElementById('welcome-screen').classList.remove('hidden');
-            showToast("Examen mis en pause. Vous pouvez le reprendre quand vous voulez.", "info");
+            showToast("Examen mis en pause.", "info");
         }
 
-        // Reprendre la session interrompue
         function resumeActiveExam() {
             if (!pausedExamBackup) return;
-
-            // Restaurer l'état
             appState = { ...pausedExamBackup };
             appState.isPaused = false;
 
             document.getElementById('total-q-num').innerText = appState.questions.length;
             document.getElementById('quiz-difficulty-badge').innerText = `Difficulté : ${appState.selectedDifficulty.toUpperCase()}`;
 
-            // Changement d'écran
             document.getElementById('welcome-screen').classList.add('hidden');
             document.getElementById('quiz-screen').classList.remove('hidden');
 
             loadQuestion();
             startTimer();
-            showToast("Session restaurée !", "success");
+            showToast("Session reprise !", "success");
         }
 
-        // Rendu de la question active
         function loadQuestion() {
             const q = appState.questions[appState.currentIdx];
             document.getElementById('current-q-num').innerText = appState.currentIdx + 1;
             document.getElementById('question-text').innerText = q.q;
             document.getElementById('progress-bar').style.width = ((appState.currentIdx + 1) / appState.questions.length * 100) + '%';
             
-            // Gestion des figures SVG embarquées
             const imgContainer = document.getElementById('image-container');
             const svgViewer = document.getElementById('svg-viewer');
             
@@ -1059,7 +1309,6 @@
                 svgViewer.innerHTML = '';
             }
 
-            // Génération de la liste des options
             const optionsList = document.getElementById('options-list');
             optionsList.innerHTML = '';
             
@@ -1069,18 +1318,15 @@
                 btn.innerHTML = `<span class="font-bold text-[#0C419A]">${String.fromCharCode(97 + idx)})</span> <span>${opt}</span>`;
                 btn.onclick = () => selectOption(idx);
                 
-                // Si la question a déjà été validée en mode interactif, figer les options
                 if (appState.validated[appState.currentIdx]) {
                     btn.disabled = true;
                     if (idx === q.correct) btn.classList.add('correct');
                     if (appState.answers[appState.currentIdx] === idx && idx !== q.correct) btn.classList.add('incorrect');
                 }
-                
                 optionsList.appendChild(btn);
             });
 
             updateNavButtons();
-            
             if (appState.validated[appState.currentIdx] && appState.selectedMode === 'interactive') {
                 showExplanation();
             } else {
@@ -1088,17 +1334,15 @@
             }
         }
 
-        // Sélection d'une option
         function selectOption(idx) {
             if (appState.validated[appState.currentIdx]) return;
             appState.answers[appState.currentIdx] = idx;
             loadQuestion();
         }
 
-        // Validation de la réponse
         function validateAnswer() {
             if (appState.answers[appState.currentIdx] === null) {
-                showToast("Veuillez sélectionner une réponse pour valider la question.", "error");
+                showToast("Veuillez sélectionner une réponse pour valider.", "error");
                 return;
             }
 
@@ -1109,7 +1353,6 @@
                 }
                 loadQuestion();
             } else {
-                // En mode classique, on enregistre simplement et on avance automatiquement
                 if (appState.currentIdx < (appState.questions.length - 1)) {
                     appState.currentIdx++;
                     loadQuestion();
@@ -1121,7 +1364,7 @@
 
         function showExplanation() {
             const box = document.getElementById('explanation-box');
-            document.getElementById('explanation-text').innerText = appState.questions[appState.currentIdx].explanation || "Pas d'explication disponible pour ce concept.";
+            document.getElementById('explanation-text').innerText = appState.questions[appState.currentIdx].explanation || "Pas d'explication disponible.";
             box.classList.remove('hidden');
             document.getElementById('validate-btn').classList.add('hidden');
             document.getElementById('next-btn').classList.remove('hidden');
@@ -1151,10 +1394,8 @@
 
         function updateNavButtons() {
             document.getElementById('prev-btn').disabled = (appState.currentIdx === 0);
-            
             const isLast = (appState.currentIdx === appState.questions.length - 1);
             const valBtn = document.getElementById('validate-btn');
-            
             if (isLast) {
                 valBtn.innerText = (appState.selectedMode === 'standard') ? "Terminer l'examen" : "Valider";
             } else {
@@ -1162,7 +1403,6 @@
             }
         }
 
-        // Gestion du chronomètre global
         function startTimer() {
             clearInterval(appState.timerInterval);
             appState.timerInterval = setInterval(() => {
@@ -1170,51 +1410,424 @@
                 let mins = Math.floor(appState.timeLeft / 60);
                 let secs = appState.timeLeft % 60;
                 document.getElementById('timer').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                
                 if (appState.timeLeft <= 0) {
                     finishExam();
                 }
             }, 1000);
         }
 
-        // Fin de l'examen et bilan
         function finishExam() {
             clearInterval(appState.timerInterval);
             appState.isExamActive = false;
-            pausedExamBackup = null; // Purger la sauvegarde de session
+            pausedExamBackup = null;
             document.getElementById('resume-container').classList.add('hidden');
 
-            // En mode classique, calculer le score global à la fin
             if (appState.selectedMode === 'standard') {
                 appState.score = 0;
                 appState.answers.forEach((ans, i) => {
                     if (ans === appState.questions[i].correct) appState.score++;
                 });
             }
-            
+
+            // Enregistrer la tentative
+            const finalScorePercent = Math.round((appState.score / appState.questions.length) * 100);
+            const attempt = {
+                timestamp: Date.now(),
+                date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                difficulty: appState.selectedDifficulty,
+                score: appState.score,
+                total: appState.questions.length,
+                percent: finalScorePercent,
+                mode: appState.selectedMode
+            };
+
+            // Sauvegarder (vers Firestore si en ligne, local sinon)
+            if (window.saveAttemptToStore) {
+                window.saveAttemptToStore(attempt);
+            } else {
+                saveAttemptToLocalStorage(attempt);
+            }
+
             document.getElementById('quiz-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('final-score').innerText = appState.score;
             document.getElementById('final-total').innerText = appState.questions.length;
-            
+
             const comment = document.getElementById('score-comment');
-            const passScore = Math.ceil(appState.questions.length * 0.6); // Seuil de passage recommandé à 60%
-            
+            const passScore = Math.ceil(appState.questions.length * 0.6);
+            const badgeBtn = document.getElementById('generate-badge-btn');
+
             if (appState.score >= passScore) {
-                comment.innerText = `Félicitations ! Vous validez cet examen blanc (${Math.round(appState.score/appState.questions.length*100)}%).`;
+                comment.innerText = `Félicitations ! Vous validez cet examen blanc (${finalScorePercent}%).`;
                 comment.className = "text-xl font-semibold mb-8 text-green-600";
+                badgeBtn.classList.remove('hidden'); // Afficher le bouton de badge
             } else {
-                comment.innerText = `Encore un peu d'entraînement. Le score de passage requis est de ${passScore}/${appState.questions.length} (${Math.round(appState.score/appState.questions.length*100)}% obtenus).`;
+                comment.innerText = `Encore un peu d'entraînement. Le score de passage requis est de ${passScore}/${appState.questions.length} (${finalScorePercent}% obtenus).`;
                 comment.className = "text-xl font-semibold mb-8 text-red-600";
+                badgeBtn.classList.add('hidden'); // Masquer le bouton de badge si échec
             }
         }
 
-        // Réinitialisation complète pour retour propre à l'accueil
+        function loadAttemptsFromLocalStorage() {
+            try {
+                const stored = localStorage.getItem('togaf_attempts_history');
+                if (stored) {
+                    window.attemptsHistory = JSON.parse(stored);
+                }
+            } catch (e) {
+                console.error("Local storage error:", e);
+            }
+            updateDashboardUI();
+        }
+
+        function saveAttemptToLocalStorage(attempt) {
+            if (!window.attemptsHistory.includes(attempt)) {
+                window.attemptsHistory.unshift(attempt);
+            }
+            try {
+                localStorage.setItem('togaf_attempts_history', JSON.stringify(window.attemptsHistory));
+            } catch (e) {
+                console.error("Local storage save error:", e);
+            }
+            updateDashboardUI();
+        }
+
+        function updateDashboardUI() {
+            const listContainer = document.getElementById('attempts-list');
+            const kpiAttempts = document.getElementById('kpi-attempts');
+            const kpiAvg = document.getElementById('kpi-avg');
+            const kpiSuccess = document.getElementById('kpi-success-rate');
+            const kpiBest = document.getElementById('kpi-best');
+
+            const attempts = window.attemptsHistory || [];
+
+            if (attempts.length === 0) {
+                kpiAttempts.innerText = "0";
+                kpiAvg.innerText = "0%";
+                kpiSuccess.innerText = "0%";
+                kpiBest.innerText = "0/40";
+                listContainer.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-4">Aucune session enregistrée.</p>`;
+                document.getElementById('no-chart-data').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('no-chart-data').classList.add('hidden');
+
+            kpiAttempts.innerText = attempts.length;
+
+            let totalPercent = 0;
+            let successAttempts = 0;
+            let bestScore = 0;
+
+            listContainer.innerHTML = '';
+
+            attempts.forEach(att => {
+                totalPercent += att.percent;
+                if (att.percent >= 60) successAttempts++;
+                if (att.score > bestScore) bestScore = att.score;
+
+                // Ajouter à la liste visuelle
+                const item = document.createElement('div');
+                item.className = "p-3 bg-white border rounded-lg flex justify-between items-center shadow-sm";
+                
+                const isWin = att.percent >= 60;
+                const badgeColor = isWin ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800';
+                
+                item.innerHTML = `
+                    <div>
+                        <span class="text-xs font-bold text-[#006386] uppercase">${att.difficulty}</span>
+                        <div class="font-bold text-gray-800 mt-0.5">${att.date}</div>
+                        <div class="text-xs text-gray-400 mt-0.5">Mode : ${att.mode === 'interactive' ? 'Interactif' : 'Classique'}</div>
+                    </div>
+                    <div class="text-right flex items-center gap-3">
+                        <span class="text-sm font-bold ${badgeColor} px-2 py-1 rounded">
+                            ${att.score}/${att.total} (${att.percent}%)
+                        </span>
+                        ${isWin ? `<button onclick="renderAndOpenBadgeDirect('${att.difficulty}', '${att.score}/${att.total}', '${att.date}')" class="text-xs font-bold text-[#0C419A] hover:underline">🎓 Badge</button>` : ''}
+                    </div>
+                `;
+                listContainer.appendChild(item);
+            });
+
+            kpiAvg.innerText = `${Math.round(totalPercent / attempts.length)}%`;
+            kpiSuccess.innerText = `${Math.round((successAttempts / attempts.length) * 100)}%`;
+            kpiBest.innerText = `${bestScore}/40`;
+
+            // Dessiner le graphique
+            drawProgressionChart(attempts);
+        }
+
+        function drawProgressionChart(attempts) {
+            const canvas = document.getElementById('progress-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            // Adapter la définition du canvas au container
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            const width = rect.width;
+            const height = rect.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // Prendre les 7 dernières tentatives max pour lisibilité, ordre chronologique
+            const pointsData = [...attempts].slice(0, 7).reverse();
+            if (pointsData.length < 2) {
+                // Pas assez de points pour dessiner une ligne, tracer une ligne par défaut
+                ctx.strokeStyle = "#E7ECF5";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(10, height - 20);
+                ctx.lineTo(width - 10, height - 20);
+                ctx.stroke();
+                return;
+            }
+
+            const paddingLeft = 30;
+            const paddingRight = 20;
+            const paddingTop = 20;
+            const paddingBottom = 20;
+
+            const chartWidth = width - paddingLeft - paddingRight;
+            const chartHeight = height - paddingTop - paddingBottom;
+
+            // Tracer la grille de référence à 60% (Seuil d'examen)
+            const passY = paddingTop + chartHeight * (1 - 0.6);
+            ctx.strokeStyle = "#10B981";
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(paddingLeft, passY);
+            ctx.lineTo(width - paddingRight, passY);
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset
+            
+            ctx.fillStyle = "#10B981";
+            ctx.font = "8px sans-serif";
+            ctx.fillText("Pass (60%)", 5, passY + 3);
+
+            // Coordonnées des points
+            const points = [];
+            pointsData.forEach((pt, i) => {
+                const x = paddingLeft + (chartWidth / (pointsData.length - 1)) * i;
+                const ratio = pt.percent / 100;
+                const y = paddingTop + chartHeight * (1 - ratio);
+                points.push({ x, y, val: pt.percent });
+            });
+
+            // Dessiner la courbe de progression
+            ctx.strokeStyle = "#0C419A";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.stroke();
+
+            // Dessiner les cercles de coordonnées
+            points.forEach(p => {
+                ctx.fillStyle = "#FFFFFF";
+                ctx.strokeStyle = "#0C419A";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Bulle de texte
+                ctx.fillStyle = "#222324";
+                ctx.font = "bold 9px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(`${p.val}%`, p.x, p.y - 8);
+            });
+        }
+
+        function renderBadgeOnCanvas(name, score, difficulty, date) {
+            const canvas = document.getElementById('badge-canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Nettoyer
+            ctx.clearRect(0, 0, 400, 400);
+
+            // Fond - Dégradé radial sophistiqué
+            const grad = ctx.createRadialGradient(200, 200, 50, 200, 200, 220);
+            grad.addColorStop(0, '#FFFFFF');
+            grad.addColorStop(0.3, '#F9F9F9');
+            grad.addColorStop(1, '#E7ECF5');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 400, 400);
+
+            // Bordures doubles et fines (Style Certificat)
+            ctx.strokeStyle = '#0C419A';
+            ctx.lineWidth = 8;
+            ctx.strokeRect(15, 15, 370, 370);
+
+            ctx.strokeStyle = '#006386';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(23, 23, 354, 354);
+
+            // Couronne ou Médaillon central doré en filigrane
+            ctx.strokeStyle = 'rgba(212, 175, 55, 0.25)';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.arc(200, 200, 130, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Rubrique En-Tête
+            ctx.fillStyle = '#0C419A';
+            ctx.font = "bold 13px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("CERTIFICATION D'ENTRAÎNEMENT", 200, 75);
+
+            ctx.fillStyle = '#006386';
+            ctx.font = "9px sans-serif";
+            ctx.fillText("SIMULATEUR DE COMPÉTENCES INDÉPENDANT", 200, 92);
+
+            // Nom du récipiendaire
+            ctx.fillStyle = '#222324';
+            ctx.font = "italic bold 18px sans-serif";
+            ctx.fillText(name, 200, 150);
+
+            // Ligne de séparation
+            ctx.strokeStyle = 'rgba(12, 65, 154, 0.2)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(100, 170);
+            ctx.lineTo(300, 170);
+            ctx.stroke();
+
+            // Réussite
+            ctx.fillStyle = '#222324';
+            ctx.font = "11px sans-serif";
+            ctx.fillText("A brillamment validé le test d'examen blanc", 200, 195);
+
+            // Intitulé TOGAF
+            ctx.fillStyle = '#0C419A';
+            ctx.font = "bold 20px sans-serif";
+            ctx.fillText("TOGAF® Enterprise Architecture", 200, 225);
+
+            ctx.fillStyle = '#006386';
+            ctx.font = "bold 11px sans-serif";
+            ctx.fillText(`Niveau Fondations Part 1 - Difficulté ${difficulty.toUpperCase()}`, 200, 245);
+
+            // Note obtenue
+            ctx.fillStyle = '#10B981';
+            ctx.font = "bold 24px sans-serif";
+            ctx.fillText(`SCORE : ${score}`, 200, 290);
+
+            // Tampon virtuel doré
+            ctx.fillStyle = 'rgba(212, 175, 55, 0.15)';
+            ctx.beginPath();
+            ctx.arc(320, 310, 35, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#D4AF37';
+            ctx.font = "9px sans-serif";
+            ctx.fillText("SUCCESS", 320, 308);
+            ctx.fillText("TOGAF EA", 320, 320);
+
+            // Date
+            ctx.fillStyle = '#7f8c8d';
+            ctx.font = "9px sans-serif";
+            ctx.textAlign = "left";
+            ctx.fillText(`Délivré le : ${date}`, 45, 345);
+            ctx.fillText("ID Vérification : #OGEA-F101-FR", 45, 358);
+
+            // Mettre à jour la balise IMG pour l'affichage mobile/tactile
+            const imgPreview = document.getElementById('badge-preview-img');
+            imgPreview.src = canvas.toDataURL("image/png");
+        }
+
+        function generateAndOpenBadge() {
+            const name = getDisplayName();
+            const scoreText = `${appState.score} / ${appState.questions.length}`;
+            const diffText = appState.selectedDifficulty;
+            const dateText = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+
+            renderBadgeOnCanvas(name, scoreText, diffText, dateText);
+            toggleBadgeModal(true);
+        }
+
+        function renderAndOpenBadgeDirect(difficulty, score, date) {
+            const name = getDisplayName();
+            // Isoler juste la date courte pour l'esthétique
+            const shortDate = date.split(' ')[0] || date;
+            renderBadgeOnCanvas(name, score, difficulty, shortDate);
+            toggleBadgeModal(true);
+        }
+
+        function downloadBadgeImage() {
+            const canvas = document.getElementById('badge-canvas');
+            const link = document.createElement('a');
+            link.download = `Badge_TOGAF_EA_Success_${getDisplayName().replace(/\s+/g, '_')}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+            showToast("Téléchargement lancé !", "success");
+        }
+
+        async function shareBadgeProgress() {
+            const name = getDisplayName();
+            const scoreText = `${appState.score || 0} / ${(appState.questions ? appState.questions.length : 40)}`;
+            const difficulty = appState.selectedDifficulty || 'medium';
+            const dateText = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+
+            const badgeId = crypto.randomUUID();
+            const badgeData = {
+                name: name,
+                score: scoreText,
+                difficulty: difficulty,
+                date: dateText,
+                timestamp: Date.now()
+            };
+
+            if (window.publishBadgeToCloud) {
+                showToast("Publication de votre badge sur le cloud...", "info");
+                const ok = await window.publishBadgeToCloud(badgeId, badgeData);
+                if (ok) {
+                    const shareUrl = `${window.location.origin}${window.location.pathname}?badge=${badgeId}`;
+                    document.getElementById('share-url-text').value = shareUrl;
+                    toggleBadgeModal(false);
+                    toggleShareModal(true);
+                } else {
+                    showToast("Échec de la connexion cloud. Partage impossible pour le moment.", "error");
+                }
+            } else {
+                showToast("Option de partage en ligne désactivée en mode local.", "error");
+            }
+        }
+
+        function copyShareUrl() {
+            const input = document.getElementById('share-url-text');
+            input.select();
+            document.execCommand('copy');
+            showToast("Lien copié dans le presse-papiers !", "success");
+        }
+
+        function openDashboard() {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('dashboard-screen').classList.remove('hidden');
+            updateDashboardUI();
+        }
+
+        function closeDashboard() {
+            document.getElementById('dashboard-screen').classList.add('hidden');
+            document.getElementById('welcome-screen').classList.remove('hidden');
+        }
+
         function resetAppToHome() {
             appState.isExamActive = false;
             pausedExamBackup = null;
             document.getElementById('resume-container').classList.add('hidden');
-            
             document.getElementById('result-screen').classList.add('hidden');
             document.getElementById('welcome-screen').classList.remove('hidden');
         }
