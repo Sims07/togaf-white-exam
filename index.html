@@ -6,6 +6,8 @@
     <title>Examen Blanc TOGAF OGEA-F101 & Dashboard</title>
     <!-- Chargement de Tailwind CSS pour un design moderne et adaptatif -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chargement de Chart.js pour un superbe rendu de la courbe de progression -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #0C419A;
@@ -132,7 +134,7 @@
                 <h3 class="text-md font-bold text-gray-500 uppercase tracking-wider">1. Choisissez le niveau de difficulté</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Option Facile -->
-                    <button id="diff-easy-btn" onclick="selectDifficulty('easy')" class="p-5 card rounded-xl text-left border-2 border-transparent hover:border-[#006386] transition-all flex flex-col justify-between h-36">
+                    <button id="diff-easy-btn" onclick="selectDifficulty('easy')" class="p-5 card rounded-xl text-left border-2 border-transparent transition-all flex flex-col justify-between h-36">
                         <div>
                             <span class="text-xl">🟢</span>
                             <h4 class="font-bold text-lg mt-2">Niveau Facile</h4>
@@ -140,7 +142,7 @@
                         <p class="text-xs text-gray-500">Valide les notions de base et définitions de l'ADM.</p>
                     </button>
                     <!-- Option Moyen -->
-                    <button id="diff-medium-btn" onclick="selectDifficulty('medium')" class="p-5 card rounded-xl text-left border-2 border-transparent hover:border-[#006386] transition-all flex flex-col justify-between h-36">
+                    <button id="diff-medium-btn" onclick="selectDifficulty('medium')" class="p-5 card rounded-xl text-left border-2 border-transparent transition-all flex flex-col justify-between h-36">
                         <div>
                             <span class="text-xl">🟡</span>
                             <h4 class="font-bold text-lg mt-2">Niveau Moyen</h4>
@@ -148,7 +150,7 @@
                         <p class="text-xs text-gray-500">Analyse la logique des phases et l'intégration des frameworks.</p>
                     </button>
                     <!-- Option Difficile -->
-                    <button id="diff-hard-btn" onclick="selectDifficulty('hard')" class="p-5 card rounded-xl text-left border-2 border-transparent hover:border-[#006386] transition-all flex flex-col justify-between h-36">
+                    <button id="diff-hard-btn" onclick="selectDifficulty('hard')" class="p-5 card rounded-xl text-left border-2 border-transparent hover:border-[#0C419A] transition-all flex flex-col justify-between h-36">
                         <div>
                             <span class="text-xl">🔴</span>
                             <h4 class="font-bold text-lg mt-2">Niveau Difficile</h4>
@@ -217,8 +219,13 @@
             </div>
 
             <!-- Explication en mode Interactif -->
-            <div id="explanation-box" class="hidden p-5 rounded-xl border-l-4 border-[#006386] bg-[#F9F9F9] shadow-sm">
-                <h4 class="font-bold text-[#006386] mb-1">💡 Explication de l'architecture</h4>
+            <div id="explanation-box" class="hidden p-5 rounded-xl border-l-4 border-[#006386] bg-[#F9F9F9] shadow-sm space-y-3">
+                <div class="flex justify-between items-center border-b pb-1">
+                    <h4 class="font-bold text-[#006386] flex items-center gap-1.5">💡 Explication de l'architecture</h4>
+                    <button onclick="copyQuestionMarkdown()" class="text-xs font-semibold text-[#0C419A] hover:underline flex items-center gap-1" title="Copier cette question au format Markdown">
+                        📋 Copier en Markdown
+                    </button>
+                </div>
                 <p id="explanation-text" class="text-sm leading-relaxed"></p>
             </div>
 
@@ -246,6 +253,9 @@
             <div class="flex flex-wrap justify-center gap-3 pt-4">
                 <button id="generate-badge-btn" onclick="generateAndOpenBadge()" class="btn-secondary px-8 py-3 rounded-lg font-bold shadow">
                     🥇 Générer mon Badge de Réussite
+                </button>
+                <button onclick="copyResultsMarkdown()" class="px-8 py-3 bg-[#E7ECF5] text-[#0C419A] rounded-lg font-bold hover:bg-opacity-80 transition shadow flex items-center gap-2">
+                    📋 Copier le bilan (Markdown)
                 </button>
                 <button onclick="resetAppToHome()" class="btn-primary px-8 py-3 rounded-lg font-bold shadow">
                     Retourner à l'accueil
@@ -291,12 +301,12 @@
 
             <!-- Graphique de progression et Liste des passages -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Graphique de progression (Canvas) -->
+                <!-- Graphique de progression (Chart.js Canvas) -->
                 <div class="card p-5 rounded-xl md:col-span-1 space-y-4">
                     <h3 class="text-md font-bold uppercase text-[#0C419A]">Progression Temporelle</h3>
                     <div class="flex items-center justify-center bg-white border rounded-xl p-2 h-48 relative">
-                        <canvas id="progress-canvas" class="w-full h-full"></canvas>
-                        <p id="no-chart-data" class="absolute text-xs text-gray-400">Aucun historique disponible pour tracer le graphique.</p>
+                        <canvas id="progress-chart-canvas" class="w-full h-full"></canvas>
+                        <p id="no-chart-data" class="hidden absolute text-xs text-gray-400">Aucun historique disponible pour tracer le graphique.</p>
                     </div>
                 </div>
 
@@ -326,9 +336,9 @@
                 Félicitations pour votre réussite. Voici votre badge officiel d'entraînement TOGAF OGEA-F101 généré à la volée.
             </p>
 
-            <!-- Rendu du Badge (Canvas invisible de rendu, et l'image d'affichage) -->
+            <!-- Rendu du Badge -->
             <div class="flex justify-center">
-                <canvas id="badge-canvas" width="400" height="400" class="hidden"></canvas>
+                <canvas id="badge-canvas" width="500" height="500" class="hidden"></canvas>
                 <img id="badge-preview-img" alt="Badge TOGAF" class="max-w-xs rounded-xl shadow-lg border">
             </div>
 
@@ -343,7 +353,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIGURATION -->
+    <!-- MODAL DE CONFIGURATION (PARAMÈTRES DES URLs JSON) -->
     <div id="config-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
@@ -351,7 +361,7 @@
                 <button onclick="toggleConfigModal(false)" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
             </div>
             <p class="text-xs text-gray-500">
-                Ajustez les URLs ou chemins d'accès locaux pour charger dynamiquement d'autres examens au format JSON.
+                Ajustez les URLs ou chemins d'accès locaux pour charger dynamiquement vos examens d'entraînement.
             </p>
             <div class="space-y-3">
                 <div>
@@ -361,6 +371,10 @@
                 <div>
                     <label class="block text-xs font-bold text-gray-600 mb-1">Chemin Niveau Moyen</label>
                     <input type="text" id="url-medium" class="w-full p-2.5 border rounded-lg text-sm" value="./examen_blanc_togaf_ea_niveau_moyen.json">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Chemin Niveau Difficile</label>
+                    <input type="text" id="url-hard" class="w-full p-2.5 border rounded-lg text-sm" value="./examen_blanc_togaf_ea_niveau_difficile.json">
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-3 border-t">
@@ -406,13 +420,13 @@
         TOGAF® Enterprise Architecture Simulator (OGEA-F101) - Entraînement en Français
     </footer>
 
-    <!-- Integration Firebase pour sauvegarder de manière persistante -->
+    <!-- Script de l'application -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, addDoc, collection, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Configuration Globale Firestore
+        // Configuration Globale Firebase
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'togaf-sim-default';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
@@ -450,1386 +464,898 @@
             }
         }
 
-        // Chargement depuis Firestore (RULE 2: Pas de orderBy, trié localement en mémoire JS)
+        // Charger l'historique depuis Firestore
         async function loadAttemptsFromFirestore() {
-            if (!userOnline || !db || !auth.currentUser) return;
+            if (!userOnline || !db) return;
             try {
-                const attemptsRef = collection(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'attempts');
-                const querySnapshot = await getDocs(attemptsRef);
-                const loadedAttempts = [];
-                querySnapshot.forEach((doc) => {
-                    loadedAttempts.push({ id: doc.id, ...doc.data() });
+                // RULE 1: Utilisation obligatoire du chemin strict requis par l'environnement
+                const colRef = collection(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'attempts');
+                const snapshot = await getDocs(colRef);
+                const items = [];
+                snapshot.forEach(doc => {
+                    items.push(doc.data());
                 });
-                // Tri en mémoire locale par date décroissante
-                loadedAttempts.sort((a, b) => b.timestamp - a.timestamp);
-                window.attemptsHistory = loadedAttempts;
+                // Trier les essais par timestamp en mémoire JS locale (pour respecter la RULE 2 - Pas de orderby)
+                items.sort((a, b) => a.timestamp - b.timestamp);
+                window.attemptsHistory = items;
                 updateDashboardUI();
             } catch (err) {
-                console.error("Error loading attempts from firestore:", err);
+                console.error("Erreur de chargement Firestore, chargement local de secours:", err);
                 loadAttemptsFromLocalStorage();
             }
         }
 
-        // Sauvegarde d'un passage dans Firestore ou stockage local de secours
-        async function saveAttemptToStore(attemptData) {
-            window.attemptsHistory.unshift(attemptData); // Ajout local immédiat
+        // Sauvegarder une tentative d'examen
+        async function saveAttempt(attempt) {
+            window.attemptsHistory.push(attempt);
+            localStorage.setItem("togaf_attempts_history", JSON.stringify(window.attemptsHistory));
             updateDashboardUI();
 
             if (userOnline && db && auth.currentUser) {
                 try {
-                    const attemptsRef = collection(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'attempts');
-                    await addDoc(attemptsRef, attemptData);
-                    console.log("Attempt successfully saved to Cloud.");
-                } catch (e) {
-                    console.error("Failed to save attempt online:", e);
-                    saveAttemptToLocalStorage(attemptData);
-                }
-            } else {
-                saveAttemptToLocalStorage(attemptData);
-            }
-        }
-
-        // Publier un badge pour le partage public
-        async function publishBadgeToCloud(badgeId, badgeData) {
-            if (userOnline && db && auth.currentUser) {
-                try {
-                    const badgeDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'badges', badgeId);
-                    await setDoc(badgeDocRef, badgeData);
-                    console.log("Badge published successfully to public cloud directory.");
-                    return true;
-                } catch (e) {
-                    console.error("Failed to publish badge to cloud:", e);
-                }
-            }
-            return false;
-        }
-
-        // Chargement du badge partagé s'il est présent dans l'URL
-        async function loadSharedBadgeFromUrl() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const badgeId = urlParams.get('badge');
-            if (badgeId && firebaseConfig) {
-                try {
-                    const app = initializeApp(firebaseConfig);
-                    const localDb = getFirestore(app);
-                    const badgeDocRef = doc(localDb, 'artifacts', appId, 'public', 'data', 'badges', badgeId);
-                    
-                    // Chargement asynchrone non-bloquant
-                    setTimeout(async () => {
-                        const snap = await getDoc(badgeDocRef);
-                        if (snap.exists()) {
-                            const data = snap.data();
-                            showToast(`Badge public validé : félicitations à ${data.name} !`, "success");
-                            // Déclencher le rendu du badge à l'écran
-                            renderBadgeOnCanvas(data.name, data.score, data.difficulty, data.date);
-                            toggleBadgeModal(true);
-                        }
-                    }, 500);
-                } catch (e) {
-                    console.error("Failed to check shared badge from url:", e);
+                    const colRef = collection(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'attempts');
+                    await addDoc(colRef, attempt);
+                    showToast("Historique sauvegardé sur votre compte cloud d'entraînement !", "success");
+                } catch (err) {
+                    console.error("Échec de sauvegarde sur Firestore :", err);
                 }
             }
         }
 
-        // Initier au démarrage de la page
-        window.addEventListener('DOMContentLoaded', async () => {
-            await initFirebase();
-            await loadSharedBadgeFromUrl();
+        window.saveAttemptToDatabase = saveAttempt;
+        window.addEventListener('DOMContentLoaded', () => {
+            initFirebase();
         });
-
-        // Exposer les méthodes d'accès cloud au scope global d'origine
-        window.saveAttemptToStore = saveAttemptToStore;
-        window.publishBadgeToCloud = publishBadgeToCloud;
     </script>
 
-    <!-- CODE APPLICATIF JAVASCRIPT -->
     <script>
-        // Assets graphiques vectoriels d'architectures d'origine (utilisés dans les schémas)
-        const SVG_ASSETS = {
-            contentFramework: `
-                <svg viewBox="0 0 500 300" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#F9F9F9; border: 1px solid #E7ECF5; border-radius: 8px;">
-                    <rect x="10" y="10" width="480" height="40" rx="5" fill="#0C419A" />
-                    <text x="250" y="35" fill="white" font-size="12" font-weight="bold" text-anchor="middle">Architecture Principles, Vision, and Requirements</text>
-                    <rect x="10" y="60" width="480" height="40" rx="5" fill="#006386" />
-                    <text x="250" y="85" fill="white" font-size="12" font-weight="bold" text-anchor="middle">Architecture Metamodel</text>
-                    <g transform="translate(10, 110)">
-                        <rect x="0" y="0" width="150" height="120" rx="5" fill="#E7ECF5" stroke="#0C419A" />
-                        <text x="75" y="25" fill="#222324" font-size="12" font-weight="bold" text-anchor="middle">Business</text>
-                        <rect x="10" y="40" width="130" height="20" rx="3" fill="white" stroke="#006386"/>
-                        <text x="75" y="54" fill="#222324" font-size="10" text-anchor="middle">Value Streams</text>
-                        <rect x="10" y="70" width="130" height="20" rx="3" fill="white" stroke="#006386"/>
-                        <text x="75" y="84" fill="#222324" font-size="10" text-anchor="middle">Capabilities</text>
-                    </g>
-                    <g transform="translate(175, 110)">
-                        <rect x="0" y="0" width="150" height="120" rx="5" fill="#E7ECF5" stroke="#0C419A" />
-                        <text x="75" y="25" fill="#222324" font-size="12" font-weight="bold" text-anchor="middle">Information Systems</text>
-                        <rect x="10" y="40" width="130" height="20" rx="3" fill="white" stroke="#006386"/>
-                        <text x="75" y="54" fill="#222324" font-size="10" text-anchor="middle">Data Entities</text>
-                        <rect x="10" y="70" width="130" height="20" rx="3" fill="white" stroke="#006386"/>
-                        <text x="75" y="84" fill="#222324" font-size="10" text-anchor="middle">Applications</text>
-                    </g>
-                    <g transform="translate(340, 110)">
-                        <rect x="0" y="0" width="140" height="120" rx="5" fill="#E7ECF5" stroke="#0C419A" />
-                        <text x="70" y="25" fill="#222324" font-size="12" font-weight="bold" text-anchor="middle">Technology</text>
-                        <rect x="10" y="40" width="120" height="50" rx="3" fill="white" stroke="#006386"/>
-                        <text x="70" y="65" fill="#222324" font-size="10" text-anchor="middle">Infrastructure</text>
-                    </g>
-                    <rect x="10" y="245" width="480" height="45" rx="5" fill="#0C419A" />
-                    <text x="250" y="272" fill="white" font-size="12" font-weight="bold" text-anchor="middle">Architecture Realization & Migration Planning</text>
-                </svg>
-            `,
-            admCycle: `
-                <svg viewBox="0 0 400 400" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#F9F9F9; border: 1px solid #E7ECF5; border-radius: 8px;">
-                    <circle cx="200" cy="200" r="45" fill="#0C419A" stroke="#FFFFFF" stroke-width="3" />
-                    <text x="200" y="195" fill="white" font-size="11" font-weight="bold" text-anchor="middle">Gestion des</text>
-                    <text x="200" y="210" fill="white" font-size="11" font-weight="bold" text-anchor="middle">Exigences (10)</text>
-                    <circle cx="200" cy="55" r="28" fill="#E7ECF5" stroke="#0C419A" stroke-width="2" />
-                    <text x="200" y="58" fill="#222324" font-size="10" font-weight="bold" text-anchor="middle">Prélim. (1)</text>
-                    <circle cx="290" cy="95" r="28" fill="#E7ECF5" stroke="#0C419A" stroke-width="2" />
-                    <text x="290" y="98" fill="#222324" font-size="10" font-weight="bold" text-anchor="middle">A (2)</text>
-                    <circle cx="335" cy="180" r="28" fill="#E7ECF5" stroke="#0C419A" stroke-width="2" />
-                    <text x="335" y="183" fill="#222324" font-size="10" font-weight="bold" text-anchor="middle">B (3)</text>
-                    <circle cx="310" cy="270" r="28" fill="#E7ECF5" stroke="#0C419A" stroke-width="2" />
-                    <text x="310" y="273" fill="#222324" font-size="10" font-weight="bold" text-anchor="middle">C (4)</text>
-                    <circle cx="230" cy="335" r="28" fill="#E7ECF5" stroke="#0C419A" stroke-width="2" />
-                    <text x="230" y="338" fill="#222324" font-size="10" font-weight="bold" text-anchor="middle">D (5)</text>
-                    <circle cx="140" cy="320" r="28" fill="#E7ECF5" stroke="#006386" stroke-width="2" />
-                    <text x="140" y="323" fill="#222324" font-size="10" font-weight="bold" text-anchor="middle">E (6)</text>
-                    <circle cx="75" cy="250" r="28" fill="#E7ECF5" stroke="#0C419A" stroke-width="2" />
-                    <text x="75" y="253" fill="#222324" font-size="10" font-weight="bold" text-anchor="middle">F (7)</text>
-                    <circle cx="70" cy="155" r="28" fill="#E7ECF5" stroke="#0C419A" stroke-width="2" />
-                    <text x="70" y="158" fill="#222324" font-size="10" font-weight="bold" text-anchor="middle">G (8)</text>
-                    <circle cx="115" cy="80" r="28" fill="#E7ECF5" stroke="#0C419A" stroke-width="2" />
-                    <text x="115" y="83" fill="#222324" font-size="10" font-weight="bold" text-anchor="middle">H (9)</text>
-                    <path d="M 200,83 L 200,155" stroke="#0C419A" stroke-width="1.5" stroke-dasharray="3,3" />
-                    <path d="M 290,123 L 235,175" stroke="#0C419A" stroke-width="1.5" stroke-dasharray="3,3" />
-                    <path d="M 307,180 L 245,200" stroke="#0C419A" stroke-width="1.5" stroke-dasharray="3,3" />
-                </svg>
-            `,
-            architectureCapability: `
-                <svg viewBox="0 0 500 300" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#F9F9F9; border: 1px solid #E7ECF5; border-radius: 8px;">
-                    <rect x="20" y="20" width="460" height="50" rx="6" fill="#0C419A" />
-                    <text x="250" y="50" fill="white" font-size="14" font-weight="bold" text-anchor="middle">Gouvernance de l'Entreprise / Comité d'Architecture</text>
-                    <g transform="translate(20, 90)">
-                        <rect x="0" y="0" width="210" height="140" rx="6" fill="#E7ECF5" stroke="#0C419A" stroke-width="2" />
-                        <text x="105" y="25" fill="#222324" font-size="12" font-weight="bold" text-anchor="middle">Bassin de Ressources Qualifiées</text>
-                        <rect x="15" y="45" width="180" height="25" rx="3" fill="white" stroke="#006386" />
-                        <text x="105" y="61" fill="#222324" font-size="10" text-anchor="middle">Professionnels certifiés</text>
-                        <rect x="15" y="80" width="180" height="25" rx="3" fill="white" stroke="#006386" />
-                        <text x="105" y="96" fill="#222324" font-size="10" text-anchor="middle">Compétences & Connaissances</text>
-                    </g>
-                    <g transform="translate(270, 90)">
-                        <rect x="0" y="0" width="210" height="140" rx="6" fill="#F9F9F9" stroke="#006386" stroke-width="2" />
-                        <text x="105" y="25" fill="#222324" font-size="12" font-weight="bold" text-anchor="middle">Processus & Opérations</text>
-                        <rect x="15" y="45" width="180" height="25" rx="3" fill="#E7ECF5" />
-                        <text x="105" y="61" fill="#222324" font-size="10" text-anchor="middle">Gouvernance de Portefeuille</text>
-                        <rect x="15" y="80" width="180" height="25" rx="3" fill="#E7ECF5" />
-                        <text x="105" y="96" fill="#222324" font-size="10" text-anchor="middle">Gestion de Projets d'AE</text>
-                    </g>
-                    <line x1="230" y1="160" x2="270" y2="160" stroke="#0C419A" stroke-width="2" marker-end="url(#arrow)" />
-                    <rect x="20" y="250" width="460" height="35" rx="4" fill="#006386" />
-                    <text x="250" y="272" fill="white" font-size="11" font-weight="bold" text-anchor="middle">Référentiel d'Architecture & Continuum d'Entreprise</text>
-                </svg>
-            `
+        // Configuration globale et variables d'état de l'application
+        let attemptsHistory = [];
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let selectedAnswers = {}; // Associe l'index de la question à l'index de la réponse utilisateur
+        let validatedQuestions = {}; // Enregistre si la question a été validée (Mode interactif)
+        let examDifficulty = 'easy'; // 'easy', 'medium', 'hard'
+        let examMode = 'standard'; // 'standard', 'interactive'
+        let timerInterval = null;
+        let secondsRemaining = 3600; // 60 minutes
+        let chartInstance = null; // Graphique Chart.js
+
+        // Chemins JSON par défaut (Sauvegardés en localStorage)
+        const DEFAULT_PATHS = {
+            easy: './examen_blanc_togaf_ea_niveau_facile.json',
+            medium: './examen_blanc_togaf_ea_niveau_moyen.json',
+            hard: './examen_blanc_togaf_ea_niveau_difficile.json'
         };
 
-        // Questions de Niveau Difficile pré-chargées nativement dans l'application
-        const DIFFICULT_QUESTIONS = [
-            {
-                q: "En quoi l'usage des itérations est-il important lors de l'application de l'ADM?",
-                options: [
-                    "Cela permet de saisir les exigences des parties prenantes tout au long du cycle ADM.",
-                    "Cela permet d'identifier les scénarios d'entreprise parmi lesquels choisir.",
-                    "Cela permet de revenir aux phases précédentes pour mettre à jour les livrables en fonction des nouvelles informations.",
-                    "Cela permet de sélectionner d'autres architectures cibles."
-                ],
-                correct: 2,
-                explanation: "L'itération permet de gérer le changement et d'affiner les livrables au fur et à mesure que de nouvelles informations sont découvertes dans les phases suivantes."
-            },
-            {
-                q: "Que représente la figure suivante ?",
-                options: [
-                    "Un cadre de contenu",
-                    "Une entreprise numérique",
-                    "Un référentiel d'architecture",
-                    "Un référentiel d'entreprise"
-                ],
-                correct: 0,
-                explanation: "L'image du document représente le Metamodèle de Contenu (Content Framework) qui structure les types d'artefacts d'architecture.",
-                svgKey: "contentFramework"
-            },
-            {
-                q: "Quel est l'un des objectifs de la phase préliminaire de l'ADM ?",
-                options: [
-                    "Elaborer le document sur la vision de l'architecture",
-                    "Élaborer le plan de mise en œuvre et de migration",
-                    "Etablir le processus de Gouvernance de l'Architecture",
-                    "Faire fonctionner le cadre de gouvernance"
-                ],
-                correct: 2,
-                explanation: "La phase préliminaire sert à définir 'où, quoi, pourquoi, qui et comment' nous faisons de l'architecture, incluant la mise en place de la gouvernance."
-            },
-            {
-                q: "Quels sont les 3 niveaux de granularité du Paysage de l'architecture ?",
-                options: [
-                    "Architecture de référence, architecture de transition et architecture cible",
-                    "Architecture des données, architecture des applications et architecture des technologies",
-                    "Architecture Stratégique, Architecture de Segment, Architecture de Capacité",
-                    "Architecture de base, architecture commune et architecture de solution"
-                ],
-                correct: 2,
-                explanation: "Le standard TOGAF définit ces trois niveaux pour organiser le référentiel d'architecture par niveaux de détail décroissants."
-            },
-            {
-                q: "Parmi les propositions suivantes, laquelle décrit un des objectifs des principes d'architecture ?",
-                options: [
-                    "Contrôler l'entreprise dans la poursuite des objectifs stratégiques",
-                    "Décrire les impacts probables résultant d'un déploiement réussi de l'architecture cible",
-                    "Former un contrat entre l'organisation commanditaire et l'architecte d'entreprise",
-                    "Établir un ordre de priorité lors des discussions de compromis"
-                ],
-                correct: 3,
-                explanation: "Les principes fournissent un cadre décisionnel stable pour arbitrer entre différentes options technologiques ou business."
-            },
-            {
-                q: "Le standard TOGAF couvre le développement de quatre domaines d'architecture: Application, Données, Technique et ...",
-                options: [
-                    "Business",
-                    "Capacité",
-                    "Transformation",
-                    "Transition"
-                ],
-                correct: 0,
-                explanation: "Les quatre domaines classiques sont Business, Data, Application et Technology (BDAT)."
-            },
-            {
-                q: "Examinez l'illustration du cycle ADM ci-dessous. Sélectionnez les noms de phase corrects correspondant aux étiquettes 2, 3 et 6.",
-                options: [
-                    "2-Vision de l'architecture; 3 - Architecture technologique; 6 - Planification de la migration",
-                    "2-Architecture Business; 3 - Architectures des systèmes d'information; 6 - Opportunités et solutions",
-                    "2-Vision de l'architecture; 3- Architecture Business; 6-Opportunités et solutions",
-                    "2-Architectures des systèmes d'information; 3 - Opportunités et solutions; 6 - Gouvernance de la mise en œuvre"
-                ],
-                correct: 2,
-                explanation: "Dans le cycle standard : 2 est la Phase A (Vision), 3 est la Phase B (Business) et 6 est la Phase E (Opportunités & Solutions).",
-                svgKey: "admCycle"
-            },
-            {
-                q: "Quelle phase de l'ADM comprend l'obtention de l'approbation de la Définition du chantier d'architecture ?",
-                options: [
-                    "Phase préliminaire",
-                    "Vision d'architecture",
-                    "Architecture technologique",
-                    "Planification de la migration"
-                ],
-                correct: 1,
-                explanation: "La 'Statement of Architecture Work' est finalisée et approuvée à la fin de la Phase A (Vision)."
-            },
-            {
-                q: "Quelle proposition décrit comment le Continuum d'Entreprise est utilisé lors du développement d'une Architecture d'Entreprise ?",
-                options: [
-                    "Pour se coordonner avec les autres cadres de management de l'Entreprise",
-                    "Pour décrire comment une architecture répond aux préoccupations des parties prenantes",
-                    "Pour identifier et comprendre les besoins business",
-                    "Pour structurer des éléments d'architecture et de solution réutilisables"
-                ],
-                correct: 3,
-                explanation: "Le Continuum d'Entreprise fournit une méthode de classification pour les actifs (réutilisables) allant du générique au spécifique."
-            },
-            {
-                q: "Selon le standard TOGAF, quelle proposition décrit le mieux l'objectif d'un Document de définition d'Architecture ?",
-                options: [
-                    "Servir de conteneur livrable pour des artefacts créés en cours de projet",
-                    "Garantir que les informations d'architecture sont communiquées aux bonnes parties prenantes au bon moment",
-                    "Fournir une vue d'ensemble de l'Architecture finale",
-                    "Montrer la progression des changements depuis l'architecture de référence jusqu'à l'architecture cible"
-                ],
-                correct: 0,
-                explanation: "C'est le document principal qui regroupe les artefacts générés durant les phases A à D de l'ADM."
-            },
-            {
-                q: "Quelle affirmation concernant le partitionnement de l'architecture est correcte ?",
-                options: [
-                    "Un modèle de partitionnement est une nécessité pour les entreprises agiles.",
-                    "Une entreprise doit développer un modèle de partitionnement qui reflète sa structure organisationnelle",
-                    "Chaque entreprise doit adopter un modèle de partitionnement qui reflète son modèle opérationnel",
-                    "Le standard TOGAF impose l'utilisation de son modèle de partitionnement"
-                ],
-                correct: 2,
-                explanation: "Le partitionnement doit être aligné sur le modèle opérationnel de l'entreprise pour être efficace."
-            },
-            {
-                q: "Que faut-il mettre en place pour s'assurer que les artefacts sont développés et utilisés de manière responsable ?",
-                options: [
-                    "La gouvernance du Document de Définition d'Architecture",
-                    "La gouvernance de la Vision d'Architecture",
-                    "La gouvernance de la gestion des Contrats d'Architecture",
-                    "La gouvernance de la Définition du Chantier d'Architecture"
-                ],
-                correct: 2,
-                explanation: "Le contrat d'architecture est l'outil principal de gouvernance pour l'implémentation."
-            },
-            {
-                q: "Lequel des énoncés suivants décrit le mieux l'un des objectifs de la technique d'analyse des écarts ?",
-                options: [
-                    "Détecter les erreurs dans l'architecture d'un projet dès le début",
-                    "Guider la prise de décision à travers l'entreprise",
-                    "Aider à identifier et à comprendre les besoins business",
-                    "Mettre en évidence les insuffisances entre l'architecture de référence et l'architecture cible"
-                ],
-                correct: 3,
-                explanation: "L'analyse des écarts (Gap Analysis) identifie ce qui manque (ou est en trop) entre l'état actuel et l'état futur."
-            },
-            {
-                q: "Considérant les objectifs (Phase G/H/F), quelle phase de l'ADM correspond ?",
-                options: [
-                    "1E-2F-3F-4H",
-                    "1F-2G-3G-4F",
-                    "1F-2H-3H-4G",
-                    "1H-2G-3F-4G"
-                ],
-                correct: 3,
-                explanation: "1H (Gestion des changements), 2G (Gouvernance), 3F (Migration), 4G (Gouvernance)."
-            },
-            {
-                q: "Quel est le niveau de risque correspondant à l'identification du risque avant de déterminer et de mettre en œuvre les actions d'atténuation ?",
-                options: [
-                    "Initial",
-                    "Faible",
-                    "Marginal",
-                    "Résiduel"
-                ],
-                correct: 0,
-                explanation: "Le risque initial est évalué avant toute action. Après traitement, on parle de risque résiduel."
-            },
-            {
-                q: "Que signifie ADM ?",
-                options: [
-                    "Art Diagram Method",
-                    "Architecture Development Method",
-                    "Art Development Medium",
-                    "Architecture Development Medium"
-                ],
-                correct: 1,
-                explanation: "Le cœur de TOGAF est l'Architecture Development Method."
-            },
-            {
-                q: "Complétez la phrase : Un/une ________ est utilisé dans la phase Architecture Business pour aider à identifier et comprendre les ________ business.",
-                options: [
-                    "Modèle d'activité; perspective",
-                    "Business Scenario; exigences",
-                    "Cas d'utilisation; interconnexions",
-                    "Évaluation de l'état de préparation à la transformation des entreprises; contraintes"
-                ],
-                correct: 1,
-                explanation: "La technique des Business Scenarios est utilisée pour dériver des exigences de haute qualité."
-            },
-            {
-                q: "Dans quel document peut-on trouver des recommandations et des bonnes pratiques sur l'application du Standard TOGAF ?",
-                options: [
-                    "TOGAF® Fundamental Content",
-                    "White Papers",
-                    "TOGAF® Series Guides",
-                    "Les techniques de l'ADM"
-                ],
-                correct: 2,
-                explanation: "Les Series Guides complètent le Fundamental Content avec des guides spécifiques (ex: Agile, Digital, Security)."
-            },
-            {
-                q: "Quelle proposition décrit le mieux comment la gouvernance de l'architecture fonctionne généralement ?",
-                options: [
-                    "Au plus haut niveau de l'organisation",
-                    "En isolement",
-                    "Dans la phase G de l'ADM",
-                    "Au sein d'une structure de gouvernance hiérarchisée"
-                ],
-                correct: 3,
-                explanation: "La gouvernance de l'architecture s'intègre dans les structures de gouvernance IT et d'entreprise existantes."
-            },
-            {
-                q: "Quelle proposition ci-après relève de la responsabilité d'un comité d'architecture ?",
-                options: [
-                    "Allouer des ressources aux projets d'architecture",
-                    "Réaliser des évaluations du niveau de maturité de la discipline architecturale au sein de l'organisation.",
-                    "Déterminer la portée d'un examen de conformité d'architecture",
-                    "Veiller à la conformité des architectures"
-                ],
-                correct: 3,
-                explanation: "Le Comité d'Architecture (Architecture Board) est responsable de veiller à la conformité."
-            },
-            {
-                q: "Dans le Canevas des Principes d'Architecture, quel élément met en évidence les exigences pour le business et l'informatique ?",
-                options: [
-                    "Implication",
-                    "Nom",
-                    "Justification",
-                    "Déclaration"
-                ],
-                correct: 0,
-                explanation: "L'Implication détaille les conséquences pratiques (coûts, changements, actions) de l'adoption du principe."
-            },
-            {
-                q: "Dans quelle phase de l'ADM le Standard TOGAF s'aligne-t-il sur le développement Agile ?",
-                options: [
-                    "Phase B",
-                    "Phase E",
-                    "Phase F",
-                    "Phase G"
-                ],
-                correct: 3,
-                explanation: "La Phase G est l'endroit où la gouvernance s'exerce sur les cycles de développement (Sprints, etc.)."
-            },
-            {
-                q: "Laquelle des affirmations suivantes concernant la gouvernance est la plus correcte ?",
-                options: [
-                    "Le praticien de l'architecture et le réalisateur sont dirigés et tous deux contrôlés par les parties prenantes",
-                    "Le praticien de l'architecture gouverne le développement de l'architecture et contrôle le réalisateur",
-                    "Le CEO gouverne l'architecture et dirige le praticien de l'architecture ainsi que le réalisateur",
-                    "Les parties prenantes dirigent le développement de l'architecture et contrôlent les changements apportés à l'architecture"
-                ],
-                correct: 0,
-                explanation: "La gouvernance repose sur la séparation des rôles et l'implication des sponsors/parties prenantes."
-            },
-            {
-                q: "Quelle dimension prend en compte le niveau de détail à capturer en fonction de l'utilisation prévue ?",
-                options: [
-                    "Largeur",
-                    "Profondeur",
-                    "Projet",
-                    "Segment"
-                ],
-                correct: 1,
-                explanation: "La 'Depth' (profondeur) définit la granularité du détail architectural."
-            },
-            {
-                q: "Quelle proposition ci-après décrit le mieux le graphique de l'ADM ?",
-                options: [
-                    "Un modèle de processus linéaire en cascade",
-                    "Une approche séquentielle pour développer une Architecture d'Entreprise",
-                    "Une représentation stylisée montrant les flux d'information essentiels",
-                    "Un cycle d'itération"
-                ],
-                correct: 2,
-                explanation: "Le diagramme en 'roue' est une stylisation montrant les relations entre phases et la gestion des exigences."
-            },
-            {
-                q: "Laquelle des propositions suivantes décrit le mieux l'objectif d'une Demande de Changement ?",
-                options: [
-                    "Garantir que l'information est communiquée aux bonnes parties prenantes au bon moment",
-                    "S'assurer que les résultats d'une évaluation de conformité sont transmis au Comité d'Architecture",
-                    "Demander une dérogation ou déclencher un nouveau cycle de travail architectural",
-                    "Examiner l'avancement du projet et s'assurer que la mise en œuvre est conforme aux objectifs"
-                ],
-                correct: 2,
-                explanation: "Une Request for Change permet soit d'accepter une déviation, soit de relancer l'ADM pour traiter un changement majeur."
-            },
-            {
-                q: "Considérez le schéma ci-dessous représentant l'organisation des ressources. Quelle proposition cela illustre-t-il ?",
-                options: [
-                    "Une capacité d'Architecture d'Entreprise",
-                    "Une Architecture d'Entreprise",
-                    "Un cadre d'Architecture d'Entreprise",
-                    "Un métamodèle d'Architecture d'Entreprise"
-                ],
-                correct: 0,
-                explanation: "Le schéma montre l'organisation des ressources, processus et outils formant l'Architecture Capability.",
-                svgKey: "architectureCapability"
-            },
-            {
-                q: "Selon le Standard TOGAF, quelle proposition suivante décrit le mieux l'objectif d'une Feuille de route d'architecture ?",
-                options: [
-                    "Garantir que l'information est communiquée aux bonnes parties prenantes au bon moment",
-                    "Gouverner l'architecture tout au long de son processus de mise en œuvre",
-                    "Fournir une vue d'ensemble du produit final de l'Architecture",
-                    "Montrer la progression du changement entre l'architecture de référence et l'architecture cible"
-                ],
-                correct: 3,
-                explanation: "La Roadmap liste les packages de travaux et les étapes chronologiques pour atteindre la cible."
-            },
-            {
-                q: "Reportez-vous au tableau (Projets approuvés, ressources...). Quelle(s) phase(s) de l'ADM cela décrit-il ?",
-                options: [
-                    "Phase A",
-                    "Phases B, C et D",
-                    "Phase E",
-                    "Phase F"
-                ],
-                correct: 3,
-                explanation: "La Phase F finalise les projets approuvés et le plan de migration détaillé."
-            },
-            {
-                q: "Quelle affirmation s'applique le mieux à un Référentiel d'Architecture ?",
-                options: [
-                    "Un Référentiel d'Architecture complet est nécessaire pour capturer tous les artefacts listés dans le Standard TOGAF",
-                    "Un Référentiel d'Architecture bien géré permet de minimiser les informations collectées et maintenues",
-                    "Les organisations agiles ne peuvent pas utiliser un Référentiel d'Architecture.",
-                    "Un Référentiel d'Architecture contient des éléments qui ne sont utilisés que par l'équipe d'Architecture d'Entreprise."
-                ],
-                correct: 1,
-                explanation: "Le but est l'efficacité ; on ne doit stocker que ce qui apporte de la valeur et peut être réutilisé."
-            },
-            {
-                q: "En considérant les objectifs (Composants candidats Roadmap), quelle phase correspond au point 4 (Approbation Chantier) ?",
-                options: [
-                    "1A-2B-3C-4D",
-                    "1B-2D-3A-4C",
-                    "1C-2D-3B-4A",
-                    "ID-2C-3B-4A"
-                ],
-                correct: 3,
-                explanation: "Le point 4 concerne la fin de la Phase A (Approbation de la Définition du Chantier)."
-            },
-            {
-                q: "Quelle proposition ci-après décrit le mieux l'objectif de la technique d'évaluation de la préparation du business ?",
-                options: [
-                    "Déterminer si l'organisation est prête à engager un changement",
-                    "Déterminer si les parties prenantes soutiennent le plan de mise en œuvre",
-                    "S'assurer à ce qu'il y ait suffisamment d'ingénieurs formés pour développer la solution",
-                    "Planifier les étapes de migration nécessaires à la réalisation de la transformation"
-                ],
-                correct: 0,
-                explanation: "Business Transformation Readiness Assessment évalue les risques liés au facteur humain et organisationnel."
-            },
-            {
-                q: "Lequel des énoncés suivants décrit le mieux l'objectif de la Définition du Chantier d'Architecture ?",
-                options: [
-                    "Elle définit le périmètre et l'approche à adopter pour mener à bien un cycle de développement de l'architecture.",
-                    "Elle est envoyée par le sponsor et déclenche le début d'un cycle de développement de l'architecture.",
-                    "Elle fournit une vision de haut niveau du projet d'architecture final.",
-                    "Elle fournit un calendrier de mise en œuvre de l'Architecture cible."
-                ],
-                correct: 0,
-                explanation: "La SOW (Statement of Architecture Work) est la réponse à la demande initiale (Request for AW)."
-            },
-            {
-                q: "Dans l'ADM, quelle affirmation concernant les documents approuvés est vraie ?",
-                options: [
-                    "Les documents approuvés sont finalisés après une phase.",
-                    "Les documents approuvés sont marqués comme étant des brouillons jusqu'à ce qu'ils soient finalisés.",
-                    "Les documents approuvés ne sont pas toujours finalisés.",
-                    "Les documents approuvés ne peuvent pas être modifiés au cours les phases suivantes."
-                ],
-                correct: 2,
-                explanation: "En raison de l'approche itérative, un document peut être approuvé pour une phase tout en restant ouvert aux ajustements futurs."
-            },
-            {
-                q: "Une chaîne de magasins passe au e-commerce. Pourquoi utiliser une Architecture d'Entreprise ?",
-                options: [
-                    "Non, cela ralentira le développement Agile de la solution",
-                    "Non, l'AE n'est pas adaptée à un changement stratégique de ce type",
-                    "Oui, une bonne Architecture d'Entreprise facilite une gouvernance efficace, la gestion des risques et l'exploitation des opportunités",
-                    "Oui, une équipe AE pourra prendre les décisions technologiques clés"
-                ],
-                correct: 2,
-                explanation: "L'AE apporte de la valeur dans les transformations complexes en alignant le business et l'IT."
-            },
-            {
-                q: "Quelle est la meilleure réponse pour expliquer les bénéfices de l'Architecture d'Entreprise ?",
-                options: [
-                    "Elle guide les architectes dans le choix des technologies pour les actionnaires",
-                    "Elle optimise la stratégie business de l'entreprise",
-                    "Elle fournit un contexte stratégique pour l'évolution de l'entreprise en réponse à des besoins en constante évolution",
-                    "Elle fixe l'étendue, le périmètre et l'échelle des changements"
-                ],
-                correct: 2,
-                explanation: "L'AE permet d'adapter l'entreprise aux changements de marché de façon cohérente et agile."
-            },
-            {
-                q: "Des Principes d'Architecture durables tout en étant capables de s'adapter au changement répondent au critère de :",
-                options: [
-                    "Cohérence",
-                    "Complétude",
-                    "Robustesse",
-                    "Stabilité"
-                ],
-                correct: 2,
-                explanation: "La robustesse garantit qu'un principe survit aux changements mineurs sans être invalidé."
-            },
-            {
-                q: "Quelle phase de l'ADM décrit le traitement des écarts entre la cible approuvée et les préférences des Parties Prenantes ?",
-                options: [
-                    "Phase B",
-                    "Phase E",
-                    "Phase G",
-                    "Phase H"
-                ],
-                correct: 3,
-                explanation: "La Phase H (Architecture Change Management) gère les évolutions et les nouvelles demandes après le cycle de base."
-            },
-            {
-                q: "Que décrit la méthode en 3 parties (Sélection critères, Alternatives, Sélection finale) ?",
-                options: [
-                    "Partitionnement de l'architecture",
-                    "Itération",
-                    "Méthode des compromis",
-                    "Business Scenario"
-                ],
-                correct: 2,
-                explanation: "C'est la définition de la technique de Trade-off Analysis (analyse des compromis)."
-            },
-            {
-                q: "En considérant les objectifs (Approche incrémentale, coordination plan...), quelle phase correspond ?",
-                options: [
-                    "1E-2F-3E-4F",
-                    "IE-2F-3F-4G",
-                    "1F-2G-3F-4F",
-                    "1G-2G-3E-4F"
-                ],
-                correct: 0,
-                explanation: "1E (Approche incrémentale), 2F (Planification), 3E (SBB/ABB), 4F (Compréhension coût/valeur)."
-            }
-        ];
-
-        // Configuration par défaut des chemins relatifs
-        let configPaths = {
-            easy: "./examen_blanc_togaf_ea_niveau_facile.json",
-            medium: "./examen_blanc_togaf_ea_niveau_moyen.json"
-        };
-
-        // Gestion de l'état de l'application
-        let appState = {
-            selectedDifficulty: 'easy', // 'easy', 'medium', 'hard'
-            selectedMode: 'interactive', // 'standard', 'interactive'
-            questions: [],               // Jeu de questions chargé en cours
-            answers: [],                 // Tableau des réponses utilisateur
-            validated: [],               // Questions validées (mode interactif)
-            currentIdx: 0,               // Index de la question courante
-            score: 0,                    // Score accumulé
-            timeLeft: 3600,              // Temps en secondes (s'adaptera au total de questions)
-            timerInterval: null,         // Pointeur vers l'intervalle de temps
-            isExamActive: false,         // Indique si un examen est en cours d'exécution
-            isPaused: false              // Indique si le chrono est en pause
-        };
-
-        // Historique en mémoire locale globale si Firebase déconnecté
-        window.attemptsHistory = [];
-        let pausedExamBackup = null;
-
+        // Chargement initial
         window.onload = function() {
-            // Chargement des préférences locales de chemins
-            const savedPaths = localStorage.getItem('togaf_config_paths');
-            if (savedPaths) {
-                configPaths = JSON.parse(savedPaths);
-            }
-            document.getElementById('url-easy').value = configPaths.easy;
-            document.getElementById('url-medium').value = configPaths.medium;
-
-            // Charger le nom d'affichage s'il existe
-            const savedName = localStorage.getItem('togaf_display_name');
-            if (savedName) {
-                document.getElementById('user-display-name').value = savedName;
-            }
-
-            selectDifficulty(appState.selectedDifficulty);
-            selectMode(appState.selectedMode);
+            loadConfigPaths();
+            loadDisplayName();
+            checkAndRenderResumeButton();
         };
 
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('toast-notification');
-            const toastMsg = document.getElementById('toast-message');
-            
-            toastMsg.innerText = message;
-            toast.className = "fixed top-4 right-4 z-50 max-w-sm p-4 rounded-lg shadow-lg border-l-4 transition-all duration-300";
-            
-            if (type === 'error') {
-                toast.classList.add('bg-red-50', 'border-red-500', 'text-red-800');
-            } else if (type === 'success') {
-                toast.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800');
-            } else {
-                toast.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-800');
-            }
-            
-            toast.classList.remove('hidden');
-            setTimeout(() => { toast.classList.add('hidden'); }, 4000);
-        }
+        // --- GESTION DE LA CONFIGURATION DES CHEMINS ---
+        function loadConfigPaths() {
+            const savedEasy = localStorage.getItem("togaf_url_easy") || DEFAULT_PATHS.easy;
+            const savedMedium = localStorage.getItem("togaf_url_medium") || DEFAULT_PATHS.medium;
+            const savedHard = localStorage.getItem("togaf_url_hard") || DEFAULT_PATHS.hard;
 
-        function toggleConfigModal(show) {
-            document.getElementById('config-modal').classList.toggle('hidden', !show);
-        }
-
-        function toggleConfirmModal(show) {
-            document.getElementById('confirm-modal').classList.toggle('hidden', !show);
-        }
-
-        function toggleBadgeModal(show) {
-            document.getElementById('badge-modal').classList.toggle('hidden', !show);
-        }
-
-        function toggleShareModal(show) {
-            document.getElementById('share-modal').classList.toggle('hidden', !show);
-        }
-
-        function saveDisplayName(val) {
-            localStorage.setItem('togaf_display_name', val.trim());
-        }
-
-        function getDisplayName() {
-            return document.getElementById('user-display-name').value.trim() || "Candidat TOGAF®";
+            document.getElementById("url-easy").value = savedEasy;
+            document.getElementById("url-medium").value = savedMedium;
+            document.getElementById("url-hard").value = savedHard;
         }
 
         function saveConfigPaths() {
-            configPaths.easy = document.getElementById('url-easy').value.trim();
-            configPaths.medium = document.getElementById('url-medium').value.trim();
-            localStorage.setItem('togaf_config_paths', JSON.stringify(configPaths));
-            showToast("Configurations enregistrées !", "success");
+            localStorage.setItem("togaf_url_easy", document.getElementById("url-easy").value.trim());
+            localStorage.setItem("togaf_url_medium", document.getElementById("url-medium").value.trim());
+            localStorage.setItem("togaf_url_hard", document.getElementById("url-hard").value.trim());
+
+            showToast("Chemins de configuration enregistrés avec succès !", "success");
             toggleConfigModal(false);
+            checkAndRenderResumeButton();
         }
 
+        function getActivePath(difficulty) {
+            const savedEasy = localStorage.getItem("togaf_url_easy") || DEFAULT_PATHS.easy;
+            const savedMedium = localStorage.getItem("togaf_url_medium") || DEFAULT_PATHS.medium;
+            const savedHard = localStorage.getItem("togaf_url_hard") || DEFAULT_PATHS.hard;
+
+            if (difficulty === 'easy') return savedEasy;
+            if (difficulty === 'medium') return savedMedium;
+            return savedHard;
+        }
+
+        function toggleConfigModal(show) {
+            document.getElementById("config-modal").classList.toggle("hidden", !show);
+        }
+
+        // --- GESTION DES PRESETS D'UTILISATEUR ---
+        function loadDisplayName() {
+            const name = localStorage.getItem("togaf_user_display_name") || "";
+            document.getElementById("user-display-name").value = name;
+        }
+
+        function saveDisplayName(value) {
+            localStorage.setItem("togaf_user_display_name", value.trim());
+        }
+
+        function getDisplayName() {
+            return localStorage.getItem("togaf_user_display_name")?.trim() || "Architecte certifié d'entraînement";
+        }
+
+        // --- SELECTION DE LA DIFFICULTE & MODE ---
         function selectDifficulty(diff) {
-            appState.selectedDifficulty = diff;
-            const btnIds = { 'easy': 'diff-easy-btn', 'medium': 'diff-medium-btn', 'hard': 'diff-hard-btn' };
-            for (let k in btnIds) {
-                const el = document.getElementById(btnIds[k]);
-                if (k === diff) {
-                    el.classList.add('border-[#0C419A]', 'bg-[#E7ECF5]');
+            examDifficulty = diff;
+            ['easy', 'medium', 'hard'].forEach(d => {
+                const btn = document.getElementById(`diff-${d}-btn`);
+                if (d === diff) {
+                    btn.classList.add("border-[#006386]", "bg-blue-50/50");
+                    btn.classList.remove("border-transparent");
                 } else {
-                    el.classList.remove('border-[#0C419A]', 'bg-[#E7ECF5]');
+                    btn.classList.remove("border-[#006386]", "bg-blue-50/50");
+                    btn.classList.add("border-transparent");
                 }
-            }
+            });
         }
 
         function selectMode(mode) {
-            appState.selectedMode = mode;
-            const btnIds = { 'standard': 'mode-standard-btn', 'interactive': 'mode-interactive-btn' };
-            for (let m in btnIds) {
-                const el = document.getElementById(btnIds[m]);
+            examMode = mode;
+            ['standard', 'interactive'].forEach(m => {
+                const btn = document.getElementById(`mode-${m}-btn`);
                 if (m === mode) {
-                    el.classList.add('border-[#0C419A]', 'bg-[#E7ECF5]');
+                    btn.classList.add("border-[#0C419A]", "bg-blue-50/50");
+                    btn.classList.remove("border-transparent");
                 } else {
-                    el.classList.remove('border-[#0C419A]', 'bg-[#E7ECF5]');
+                    btn.classList.remove("border-[#0C419A]", "bg-blue-50/50");
+                    btn.classList.add("border-transparent");
                 }
-            }
+            });
         }
 
+        // Sélection par défaut au démarrage
+        selectDifficulty('easy');
+        selectMode('interactive');
+
+        // --- TOASTS ---
+        function showToast(message, type = "info") {
+            const toast = document.getElementById("toast-notification");
+            const text = document.getElementById("toast-message");
+
+            toast.className = "fixed top-4 right-4 z-50 max-w-sm p-4 rounded-lg shadow-lg border-l-4 transition-all duration-300";
+            if (type === "success") {
+                toast.classList.add("bg-emerald-50", "border-emerald-500", "text-emerald-800");
+            } else if (type === "error") {
+                toast.classList.add("bg-red-50", "border-red-500", "text-red-800");
+            } else {
+                toast.classList.add("bg-blue-50", "border-blue-500", "text-blue-800");
+            }
+
+            text.textContent = message;
+            toast.classList.remove("hidden");
+
+            setTimeout(() => {
+                toast.classList.add("hidden");
+            }, 4000);
+        }
+
+        // --- COMMENCER L'EXAMEN ---
         function confirmAndStart() {
-            if (appState.isExamActive && !appState.isPaused) {
-                toggleConfirmModal(true);
-            } else if (pausedExamBackup) {
+            // Vérifier s'il y a déjà une session en cours d'enregistrement
+            const session = localStorage.getItem("togaf_active_session");
+            if (session) {
                 toggleConfirmModal(true);
             } else {
                 forceStartNewExam();
             }
         }
 
-        function forceStartNewExam() {
+        function toggleConfirmModal(show) {
+            document.getElementById("confirm-modal").classList.toggle("hidden", !show);
+        }
+
+        async function forceStartNewExam() {
             toggleConfirmModal(false);
-            pausedExamBackup = null;
-            document.getElementById('resume-container').classList.add('hidden');
-            loadAndStartExam();
-        }
-
-        async function loadAndStartExam() {
-            let questionsLoaded = [];
-            if (appState.selectedDifficulty === 'hard') {
-                questionsLoaded = [...DIFFICULT_QUESTIONS];
-            } else {
-                const targetUrl = configPaths[appState.selectedDifficulty];
-                try {
-                    const response = await fetch(targetUrl);
-                    if (!response.ok) throw new Error(`Erreur HTTP : ${response.status}`);
-                    const data = await response.json();
-                    if (Array.isArray(data) && data.length > 0) {
-                        questionsLoaded = data;
-                    } else {
-                        throw new Error("Le format du JSON n'est pas valide.");
-                    }
-                } catch (error) {
-                    console.error(error);
-                    showToast(`Échec du chargement du fichier JSON (${targetUrl}). Vérifiez vos fichiers ou configurez l'URL.`, "error");
-                    return;
+            const path = getActivePath(examDifficulty);
+            
+            showToast("Chargement de l'examen d'architecture...", "info");
+            
+            try {
+                const response = await fetch(path);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            }
-
-            appState.questions = questionsLoaded;
-            appState.answers = new Array(questionsLoaded.length).fill(null);
-            appState.validated = new Array(questionsLoaded.length).fill(false);
-            appState.currentIdx = 0;
-            appState.score = 0;
-            appState.timeLeft = Math.round(questionsLoaded.length * 90);
-            appState.isExamActive = true;
-            appState.isPaused = false;
-
-            document.getElementById('total-q-num').innerText = questionsLoaded.length;
-            document.getElementById('quiz-difficulty-badge').innerText = `Difficulté : ${appState.selectedDifficulty.toUpperCase()}`;
-
-            document.getElementById('welcome-screen').classList.add('hidden');
-            document.getElementById('dashboard-screen').classList.add('hidden');
-            document.getElementById('quiz-screen').classList.remove('hidden');
-            document.getElementById('result-screen').classList.add('hidden');
-
-            loadQuestion();
-            startTimer();
-            showToast("Nouvel examen démarré.", "success");
-        }
-
-        function pauseAndGoHome() {
-            clearInterval(appState.timerInterval);
-            appState.isPaused = true;
-            pausedExamBackup = { ...appState };
-
-            document.getElementById('resume-difficulty-text').innerText = appState.selectedDifficulty.toUpperCase();
-            document.getElementById('resume-progress-text').innerText = `${appState.currentIdx + 1} / ${appState.questions.length}`;
-            document.getElementById('resume-container').classList.remove('hidden');
-
-            document.getElementById('quiz-screen').classList.add('hidden');
-            document.getElementById('welcome-screen').classList.remove('hidden');
-            showToast("Examen mis en pause.", "info");
-        }
-
-        function resumeActiveExam() {
-            if (!pausedExamBackup) return;
-            appState = { ...pausedExamBackup };
-            appState.isPaused = false;
-
-            document.getElementById('total-q-num').innerText = appState.questions.length;
-            document.getElementById('quiz-difficulty-badge').innerText = `Difficulté : ${appState.selectedDifficulty.toUpperCase()}`;
-
-            document.getElementById('welcome-screen').classList.add('hidden');
-            document.getElementById('quiz-screen').classList.remove('hidden');
-
-            loadQuestion();
-            startTimer();
-            showToast("Session reprise !", "success");
-        }
-
-        function loadQuestion() {
-            const q = appState.questions[appState.currentIdx];
-            document.getElementById('current-q-num').innerText = appState.currentIdx + 1;
-            document.getElementById('question-text').innerText = q.q;
-            document.getElementById('progress-bar').style.width = ((appState.currentIdx + 1) / appState.questions.length * 100) + '%';
-            
-            const imgContainer = document.getElementById('image-container');
-            const svgViewer = document.getElementById('svg-viewer');
-            
-            if (q.svgKey && SVG_ASSETS[q.svgKey]) {
-                imgContainer.classList.remove('hidden');
-                svgViewer.innerHTML = SVG_ASSETS[q.svgKey];
-            } else {
-                imgContainer.classList.add('hidden');
-                svgViewer.innerHTML = '';
-            }
-
-            const optionsList = document.getElementById('options-list');
-            optionsList.innerHTML = '';
-            
-            q.options.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.className = `option-btn w-full p-4 rounded-xl flex items-start gap-3 transition-all ${appState.answers[appState.currentIdx] === idx ? 'option-selected' : ''}`;
-                btn.innerHTML = `<span class="font-bold text-[#0C419A]">${String.fromCharCode(97 + idx)})</span> <span>${opt}</span>`;
-                btn.onclick = () => selectOption(idx);
+                const data = await response.json();
                 
-                if (appState.validated[appState.currentIdx]) {
-                    btn.disabled = true;
-                    if (idx === q.correct) btn.classList.add('correct');
-                    if (appState.answers[appState.currentIdx] === idx && idx !== q.correct) btn.classList.add('incorrect');
+                if (!Array.isArray(data) || data.length === 0) {
+                    throw new Error("Le format du fichier JSON est invalide ou vide.");
                 }
+
+                // Initialiser l'état
+                questions = data;
+                currentQuestionIndex = 0;
+                selectedAnswers = {};
+                validatedQuestions = {};
+                secondsRemaining = 3600;
+
+                // Cacher l'accueil, afficher le quiz
+                document.getElementById("welcome-screen").classList.add("hidden");
+                document.getElementById("quiz-screen").classList.remove("hidden");
+                document.getElementById("result-screen").classList.add("hidden");
+
+                // Configurer le Badge de difficulté
+                const badge = document.getElementById("quiz-difficulty-badge");
+                badge.textContent = examDifficulty === 'easy' ? '🟢 Facile' : examDifficulty === 'medium' ? '🟡 Moyen' : '🔴 Difficile';
+
+                // Lancer le chronomètre
+                startTimer();
+                renderQuestion();
+                saveSessionProgress();
+
+            } catch (err) {
+                console.error("Échec de chargement du JSON :", err);
+                showToast(`Impossible de charger l'examen (${examDifficulty}). Veuillez vérifier votre chemin réseau ou d'accès local dans le menu Configuration ⚙️.`, "error");
+            }
+        }
+
+        // --- TIMERS & PROGRESSION ---
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                secondsRemaining--;
+                updateTimerUI();
+                if (secondsRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    finishExam();
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const minutes = Math.floor(secondsRemaining / 60);
+            const seconds = secondsRemaining % 60;
+            document.getElementById("timer").textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateProgressBar() {
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById("progress-bar").style.width = `${progress}%`;
+        }
+
+        // --- AFFICHAGE DE LA QUESTION ---
+        function renderQuestion() {
+            if (questions.length === 0) return;
+            updateProgressBar();
+
+            const question = questions[currentQuestionIndex];
+            document.getElementById("current-q-num").textContent = currentQuestionIndex + 1;
+            document.getElementById("total-q-num").textContent = questions.length;
+            document.getElementById("question-text").textContent = question.q;
+
+            // Rendu des schémas d'architecture SVG si applicables
+            const svgViewer = document.getElementById("svg-viewer");
+            const imageContainer = document.getElementById("image-container");
+            if (question.svgKey) {
+                imageContainer.classList.remove("hidden");
+                svgViewer.innerHTML = getArchitecturalSVG(question.svgKey);
+            } else {
+                imageContainer.classList.add("hidden");
+                svgViewer.innerHTML = "";
+            }
+
+            // Rendu des options
+            const optionsList = document.getElementById("options-list");
+            optionsList.innerHTML = "";
+
+            const isInteractive = (examMode === 'interactive');
+            const isValidated = validatedQuestions[currentQuestionIndex];
+
+            question.options.forEach((option, index) => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn w-full p-4 rounded-xl text-sm md:text-base flex justify-between items-center shadow-sm";
+                btn.textContent = option;
+                btn.disabled = (isInteractive && isValidated);
+
+                // Appliquer l'état visuel sélectionné
+                if (selectedAnswers[currentQuestionIndex] === index) {
+                    btn.classList.add("option-selected");
+                }
+
+                // En mode interactif validé, colorer directement les réponses
+                if (isInteractive && isValidated) {
+                    if (index === question.correct) {
+                        btn.classList.add("correct");
+                        btn.innerHTML += " <span>✅</span>";
+                    } else if (selectedAnswers[currentQuestionIndex] === index) {
+                        btn.classList.add("incorrect");
+                        btn.innerHTML += " <span>❌</span>";
+                    }
+                }
+
+                btn.onclick = () => selectOption(index);
                 optionsList.appendChild(btn);
             });
 
-            updateNavButtons();
-            if (appState.validated[appState.currentIdx] && appState.selectedMode === 'interactive') {
-                showExplanation();
+            // Gérer l'affichage de l'explication et de la navigation
+            const explanationBox = document.getElementById("explanation-box");
+            const validateBtn = document.getElementById("validate-btn");
+            const nextBtn = document.getElementById("next-btn");
+
+            if (isInteractive) {
+                if (isValidated) {
+                    explanationBox.classList.remove("hidden");
+                    document.getElementById("explanation-text").innerHTML = `<strong>Raisonnement officiel :</strong> ${question.explanation}`;
+                    validateBtn.classList.add("hidden");
+                    nextBtn.classList.remove("hidden");
+                } else {
+                    explanationBox.classList.add("hidden");
+                    validateBtn.classList.remove("hidden");
+                    nextBtn.classList.add("hidden");
+                }
             } else {
-                hideExplanation();
+                explanationBox.classList.add("hidden");
+                validateBtn.classList.add("hidden");
+                nextBtn.classList.remove("hidden");
+            }
+
+            // Désactiver Précédent à la question 1
+            document.getElementById("prev-btn").disabled = (currentQuestionIndex === 0);
+            
+            // Adapter l'intitulé du bouton suivant pour la dernière question
+            if (currentQuestionIndex === questions.length - 1) {
+                nextBtn.textContent = "Terminer l'examen 🏁";
+            } else {
+                nextBtn.textContent = "Suivant ➔";
             }
         }
 
-        function selectOption(idx) {
-            if (appState.validated[appState.currentIdx]) return;
-            appState.answers[appState.currentIdx] = idx;
-            loadQuestion();
+        // Sélection d'une option
+        function selectOption(index) {
+            selectedAnswers[currentQuestionIndex] = index;
+            renderQuestion();
+            saveSessionProgress();
         }
 
+        // Validation en mode Interactif
         function validateAnswer() {
-            if (appState.answers[appState.currentIdx] === null) {
-                showToast("Veuillez sélectionner une réponse pour valider.", "error");
+            if (selectedAnswers[currentQuestionIndex] === undefined) {
+                showToast("Veuillez sélectionner une réponse avant de valider.", "error");
+                return;
+            }
+            validatedQuestions[currentQuestionIndex] = true;
+            renderQuestion();
+            saveSessionProgress();
+        }
+
+        // Navigation
+        function nextQuestion() {
+            if (!validatedQuestions[currentQuestionIndex] && examMode === 'interactive') {
+                if (selectedAnswers[currentQuestionIndex] === undefined) {
+                    showToast("Sélectionnez d'abord une option.", "error");
+                    return;
+                }
+                validateAnswer();
                 return;
             }
 
-            if (appState.selectedMode === 'interactive') {
-                appState.validated[appState.currentIdx] = true;
-                if (appState.answers[appState.currentIdx] === appState.questions[appState.currentIdx].correct) {
-                    appState.score++;
-                }
-                loadQuestion();
-            } else {
-                if (appState.currentIdx < (appState.questions.length - 1)) {
-                    appState.currentIdx++;
-                    loadQuestion();
-                } else {
-                    finishExam();
-                }
-            }
-        }
-
-        function showExplanation() {
-            const box = document.getElementById('explanation-box');
-            document.getElementById('explanation-text').innerText = appState.questions[appState.currentIdx].explanation || "Pas d'explication disponible.";
-            box.classList.remove('hidden');
-            document.getElementById('validate-btn').classList.add('hidden');
-            document.getElementById('next-btn').classList.remove('hidden');
-        }
-
-        function hideExplanation() {
-            document.getElementById('explanation-box').classList.add('hidden');
-            document.getElementById('validate-btn').classList.remove('hidden');
-            document.getElementById('next-btn').classList.add('hidden');
-        }
-
-        function nextQuestion() {
-            if (appState.currentIdx < (appState.questions.length - 1)) {
-                appState.currentIdx++;
-                loadQuestion();
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+                saveSessionProgress();
             } else {
                 finishExam();
             }
         }
 
         function prevQuestion() {
-            if (appState.currentIdx > 0) {
-                appState.currentIdx--;
-                loadQuestion();
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+                saveSessionProgress();
             }
         }
 
-        function updateNavButtons() {
-            document.getElementById('prev-btn').disabled = (appState.currentIdx === 0);
-            const isLast = (appState.currentIdx === appState.questions.length - 1);
-            const valBtn = document.getElementById('validate-btn');
-            if (isLast) {
-                valBtn.innerText = (appState.selectedMode === 'standard') ? "Terminer l'examen" : "Valider";
-            } else {
-                valBtn.innerText = (appState.selectedMode === 'standard') ? "Suivant" : "Valider";
-            }
+        // --- PERSISTANCE DE LA SESSION (PAUSE & REPRISE) ---
+        function saveSessionProgress() {
+            const progress = {
+                difficulty: examDifficulty,
+                mode: examMode,
+                questions: questions,
+                currentQuestionIndex: currentQuestionIndex,
+                selectedAnswers: selectedAnswers,
+                validatedQuestions: validatedQuestions,
+                secondsRemaining: secondsRemaining
+            };
+            localStorage.setItem("togaf_active_session", JSON.stringify(progress));
+            checkAndRenderResumeButton();
         }
 
-        function startTimer() {
-            clearInterval(appState.timerInterval);
-            appState.timerInterval = setInterval(() => {
-                appState.timeLeft--;
-                let mins = Math.floor(appState.timeLeft / 60);
-                let secs = appState.timeLeft % 60;
-                document.getElementById('timer').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                if (appState.timeLeft <= 0) {
-                    finishExam();
+        function checkAndRenderResumeButton() {
+            const session = localStorage.getItem("togaf_active_session");
+            const container = document.getElementById("resume-container");
+            if (session) {
+                try {
+                    const data = JSON.parse(session);
+                    document.getElementById("resume-difficulty-text").textContent = data.difficulty.toUpperCase();
+                    document.getElementById("resume-progress-text").textContent = `${data.currentQuestionIndex + 1} / ${data.questions.length}`;
+                    container.classList.remove("hidden");
+                } catch {
+                    container.classList.add("hidden");
                 }
-            }, 1000);
+            } else {
+                container.classList.add("hidden");
+            }
         }
 
-        function finishExam() {
-            clearInterval(appState.timerInterval);
-            appState.isExamActive = false;
-            pausedExamBackup = null;
-            document.getElementById('resume-container').classList.add('hidden');
+        function resumeActiveExam() {
+            const session = localStorage.getItem("togaf_active_session");
+            if (!session) return;
+            try {
+                const data = JSON.parse(session);
+                examDifficulty = data.difficulty;
+                examMode = data.mode;
+                questions = data.questions;
+                currentQuestionIndex = data.currentQuestionIndex;
+                selectedAnswers = data.selectedAnswers;
+                validatedQuestions = data.validatedQuestions;
+                secondsRemaining = data.secondsRemaining;
 
-            if (appState.selectedMode === 'standard') {
-                appState.score = 0;
-                appState.answers.forEach((ans, i) => {
-                    if (ans === appState.questions[i].correct) appState.score++;
-                });
+                // Configurer l'UI
+                document.getElementById("welcome-screen").classList.add("hidden");
+                document.getElementById("quiz-screen").classList.remove("hidden");
+                document.getElementById("result-screen").classList.add("hidden");
+
+                const badge = document.getElementById("quiz-difficulty-badge");
+                badge.textContent = examDifficulty === 'easy' ? '🟢 Facile' : examDifficulty === 'medium' ? '🟡 Moyen' : '🔴 Difficile';
+
+                startTimer();
+                renderQuestion();
+            } catch {
+                showToast("Échec de récupération de la session.", "error");
+            }
+        }
+
+        function pauseAndGoHome() {
+            clearInterval(timerInterval);
+            saveSessionProgress();
+            document.getElementById("quiz-screen").classList.add("hidden");
+            document.getElementById("welcome-screen").classList.remove("hidden");
+            showToast("Votre session d'examen a été mise en pause et sauvegardée.", "info");
+        }
+
+        // --- FIN D'EXAMEN ET RÉSULTATS ---
+        function finishExam() {
+            clearInterval(timerInterval);
+            localStorage.removeItem("togaf_active_session"); // Nettoyer la session en cours
+
+            // Calculer le score
+            let correctCount = 0;
+            questions.forEach((q, index) => {
+                if (selectedAnswers[index] === q.correct) {
+                    correctCount++;
+                }
+            });
+
+            // Afficher l'écran des résultats
+            document.getElementById("quiz-screen").classList.add("hidden");
+            document.getElementById("result-screen").classList.remove("hidden");
+
+            document.getElementById("final-score").textContent = correctCount;
+            document.getElementById("final-total").textContent = questions.length;
+
+            const percentage = (correctCount / questions.length) * 100;
+            const comments = document.getElementById("score-comment");
+            const generateBtn = document.getElementById("generate-badge-btn");
+
+            if (percentage >= 60) {
+                comments.innerHTML = `<span class="text-emerald-600">Félicitations ! Vous avez réussi avec ${percentage.toFixed(1)}% !</span>`;
+                generateBtn.classList.remove("hidden");
+            } else {
+                comments.innerHTML = `<span class="text-red-600">Échec avec ${percentage.toFixed(1)}%. Continuez à vous entraîner !</span>`;
+                generateBtn.classList.add("hidden");
             }
 
-            // Enregistrer la tentative
-            const finalScorePercent = Math.round((appState.score / appState.questions.length) * 100);
+            // Enregistrer la tentative dans l'historique
             const attempt = {
                 timestamp: Date.now(),
-                date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-                difficulty: appState.selectedDifficulty,
-                score: appState.score,
-                total: appState.questions.length,
-                percent: finalScorePercent,
-                mode: appState.selectedMode
+                difficulty: examDifficulty,
+                score: correctCount,
+                total: questions.length,
+                percentage: percentage
             };
 
-            // Sauvegarder (vers Firestore si en ligne, local sinon)
-            if (window.saveAttemptToStore) {
-                window.saveAttemptToStore(attempt);
+            if (typeof window.saveAttemptToDatabase === "function") {
+                window.saveAttemptToDatabase(attempt);
             } else {
-                saveAttemptToLocalStorage(attempt);
+                // Secours en mémoire locale si Firebase n'est pas encore prêt
+                attemptsHistory.push(attempt);
+                localStorage.setItem("togaf_attempts_history", JSON.stringify(attemptsHistory));
+                updateDashboardUI();
             }
 
-            document.getElementById('quiz-screen').classList.add('hidden');
-            document.getElementById('result-screen').classList.remove('hidden');
-            document.getElementById('final-score').innerText = appState.score;
-            document.getElementById('final-total').innerText = appState.questions.length;
-
-            const comment = document.getElementById('score-comment');
-            const passScore = Math.ceil(appState.questions.length * 0.6);
-            const badgeBtn = document.getElementById('generate-badge-btn');
-
-            if (appState.score >= passScore) {
-                comment.innerText = `Félicitations ! Vous validez cet examen blanc (${finalScorePercent}%).`;
-                comment.className = "text-xl font-semibold mb-8 text-green-600";
-                badgeBtn.classList.remove('hidden'); // Afficher le bouton de badge
-            } else {
-                comment.innerText = `Encore un peu d'entraînement. Le score de passage requis est de ${passScore}/${appState.questions.length} (${finalScorePercent}% obtenus).`;
-                comment.className = "text-xl font-semibold mb-8 text-red-600";
-                badgeBtn.classList.add('hidden'); // Masquer le bouton de badge si échec
-            }
+            checkAndRenderResumeButton();
         }
 
+        function resetAppToHome() {
+            document.getElementById("result-screen").classList.add("hidden");
+            document.getElementById("welcome-screen").classList.remove("hidden");
+        }
+
+        // --- STOCKAGE LOCAL (BACKUP) ---
         function loadAttemptsFromLocalStorage() {
-            try {
-                const stored = localStorage.getItem('togaf_attempts_history');
-                if (stored) {
-                    window.attemptsHistory = JSON.parse(stored);
-                }
-            } catch (e) {
-                console.error("Local storage error:", e);
-            }
+            const saved = localStorage.getItem("togaf_attempts_history");
+            attemptsHistory = saved ? JSON.parse(saved) : [];
             updateDashboardUI();
         }
 
-        function saveAttemptToLocalStorage(attempt) {
-            if (!window.attemptsHistory.includes(attempt)) {
-                window.attemptsHistory.unshift(attempt);
-            }
-            try {
-                localStorage.setItem('togaf_attempts_history', JSON.stringify(window.attemptsHistory));
-            } catch (e) {
-                console.error("Local storage save error:", e);
-            }
-            updateDashboardUI();
-        }
-
-        function updateDashboardUI() {
-            const listContainer = document.getElementById('attempts-list');
-            const kpiAttempts = document.getElementById('kpi-attempts');
-            const kpiAvg = document.getElementById('kpi-avg');
-            const kpiSuccess = document.getElementById('kpi-success-rate');
-            const kpiBest = document.getElementById('kpi-best');
-
-            const attempts = window.attemptsHistory || [];
-
-            if (attempts.length === 0) {
-                kpiAttempts.innerText = "0";
-                kpiAvg.innerText = "0%";
-                kpiSuccess.innerText = "0%";
-                kpiBest.innerText = "0/40";
-                listContainer.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-4">Aucune session enregistrée.</p>`;
-                document.getElementById('no-chart-data').classList.remove('hidden');
-                return;
-            }
-
-            document.getElementById('no-chart-data').classList.add('hidden');
-
-            kpiAttempts.innerText = attempts.length;
-
-            let totalPercent = 0;
-            let successAttempts = 0;
-            let bestScore = 0;
-
-            listContainer.innerHTML = '';
-
-            attempts.forEach(att => {
-                totalPercent += att.percent;
-                if (att.percent >= 60) successAttempts++;
-                if (att.score > bestScore) bestScore = att.score;
-
-                // Ajouter à la liste visuelle
-                const item = document.createElement('div');
-                item.className = "p-3 bg-white border rounded-lg flex justify-between items-center shadow-sm";
-                
-                const isWin = att.percent >= 60;
-                const badgeColor = isWin ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800';
-                
-                item.innerHTML = `
-                    <div>
-                        <span class="text-xs font-bold text-[#006386] uppercase">${att.difficulty}</span>
-                        <div class="font-bold text-gray-800 mt-0.5">${att.date}</div>
-                        <div class="text-xs text-gray-400 mt-0.5">Mode : ${att.mode === 'interactive' ? 'Interactif' : 'Classique'}</div>
-                    </div>
-                    <div class="text-right flex items-center gap-3">
-                        <span class="text-sm font-bold ${badgeColor} px-2 py-1 rounded">
-                            ${att.score}/${att.total} (${att.percent}%)
-                        </span>
-                        ${isWin ? `<button onclick="renderAndOpenBadgeDirect('${att.difficulty}', '${att.score}/${att.total}', '${att.date}')" class="text-xs font-bold text-[#0C419A] hover:underline">🎓 Badge</button>` : ''}
-                    </div>
-                `;
-                listContainer.appendChild(item);
-            });
-
-            kpiAvg.innerText = `${Math.round(totalPercent / attempts.length)}%`;
-            kpiSuccess.innerText = `${Math.round((successAttempts / attempts.length) * 100)}%`;
-            kpiBest.innerText = `${bestScore}/40`;
-
-            // Dessiner le graphique
-            drawProgressionChart(attempts);
-        }
-
-        function drawProgressionChart(attempts) {
-            const canvas = document.getElementById('progress-canvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            
-            // Adapter la définition du canvas au container
-            const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
-            ctx.scale(dpr, dpr);
-
-            const width = rect.width;
-            const height = rect.height;
-
-            ctx.clearRect(0, 0, width, height);
-
-            // Prendre les 7 dernières tentatives max pour lisibilité, ordre chronologique
-            const pointsData = [...attempts].slice(0, 7).reverse();
-            if (pointsData.length < 2) {
-                // Pas assez de points pour dessiner une ligne, tracer une ligne par défaut
-                ctx.strokeStyle = "#E7ECF5";
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(10, height - 20);
-                ctx.lineTo(width - 10, height - 20);
-                ctx.stroke();
-                return;
-            }
-
-            const paddingLeft = 30;
-            const paddingRight = 20;
-            const paddingTop = 20;
-            const paddingBottom = 20;
-
-            const chartWidth = width - paddingLeft - paddingRight;
-            const chartHeight = height - paddingTop - paddingBottom;
-
-            // Tracer la grille de référence à 60% (Seuil d'examen)
-            const passY = paddingTop + chartHeight * (1 - 0.6);
-            ctx.strokeStyle = "#10B981";
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([4, 4]);
-            ctx.beginPath();
-            ctx.moveTo(paddingLeft, passY);
-            ctx.lineTo(width - paddingRight, passY);
-            ctx.stroke();
-            ctx.setLineDash([]); // Reset
-            
-            ctx.fillStyle = "#10B981";
-            ctx.font = "8px sans-serif";
-            ctx.fillText("Pass (60%)", 5, passY + 3);
-
-            // Coordonnées des points
-            const points = [];
-            pointsData.forEach((pt, i) => {
-                const x = paddingLeft + (chartWidth / (pointsData.length - 1)) * i;
-                const ratio = pt.percent / 100;
-                const y = paddingTop + chartHeight * (1 - ratio);
-                points.push({ x, y, val: pt.percent });
-            });
-
-            // Dessiner la courbe de progression
-            ctx.strokeStyle = "#0C419A";
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(points[0].x, points[0].y);
-            for (let i = 1; i < points.length; i++) {
-                ctx.lineTo(points[i].x, points[i].y);
-            }
-            ctx.stroke();
-
-            // Dessiner les cercles de coordonnées
-            points.forEach(p => {
-                ctx.fillStyle = "#FFFFFF";
-                ctx.strokeStyle = "#0C419A";
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-
-                // Bulle de texte
-                ctx.fillStyle = "#222324";
-                ctx.font = "bold 9px sans-serif";
-                ctx.textAlign = "center";
-                ctx.fillText(`${p.val}%`, p.x, p.y - 8);
-            });
-        }
-
-        function renderBadgeOnCanvas(name, score, difficulty, date) {
-            const canvas = document.getElementById('badge-canvas');
-            const ctx = canvas.getContext('2d');
-
-            // Nettoyer
-            ctx.clearRect(0, 0, 400, 400);
-
-            // Fond - Dégradé radial sophistiqué
-            const grad = ctx.createRadialGradient(200, 200, 50, 200, 200, 220);
-            grad.addColorStop(0, '#FFFFFF');
-            grad.addColorStop(0.3, '#F9F9F9');
-            grad.addColorStop(1, '#E7ECF5');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, 400, 400);
-
-            // Bordures doubles et fines (Style Certificat)
-            ctx.strokeStyle = '#0C419A';
-            ctx.lineWidth = 8;
-            ctx.strokeRect(15, 15, 370, 370);
-
-            ctx.strokeStyle = '#006386';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(23, 23, 354, 354);
-
-            // Couronne ou Médaillon central doré en filigrane
-            ctx.strokeStyle = 'rgba(212, 175, 55, 0.25)';
-            ctx.lineWidth = 6;
-            ctx.beginPath();
-            ctx.arc(200, 200, 130, 0, Math.PI * 2);
-            ctx.stroke();
-
-            // Rubrique En-Tête
-            ctx.fillStyle = '#0C419A';
-            ctx.font = "bold 13px sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText("CERTIFICATION D'ENTRAÎNEMENT", 200, 75);
-
-            ctx.fillStyle = '#006386';
-            ctx.font = "9px sans-serif";
-            ctx.fillText("SIMULATEUR DE COMPÉTENCES INDÉPENDANT", 200, 92);
-
-            // Nom du récipiendaire
-            ctx.fillStyle = '#222324';
-            ctx.font = "italic bold 18px sans-serif";
-            ctx.fillText(name, 200, 150);
-
-            // Ligne de séparation
-            ctx.strokeStyle = 'rgba(12, 65, 154, 0.2)';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(100, 170);
-            ctx.lineTo(300, 170);
-            ctx.stroke();
-
-            // Réussite
-            ctx.fillStyle = '#222324';
-            ctx.font = "11px sans-serif";
-            ctx.fillText("A brillamment validé le test d'examen blanc", 200, 195);
-
-            // Intitulé TOGAF
-            ctx.fillStyle = '#0C419A';
-            ctx.font = "bold 20px sans-serif";
-            ctx.fillText("TOGAF® Enterprise Architecture", 200, 225);
-
-            ctx.fillStyle = '#006386';
-            ctx.font = "bold 11px sans-serif";
-            ctx.fillText(`Niveau Fondations Part 1 - Difficulté ${difficulty.toUpperCase()}`, 200, 245);
-
-            // Note obtenue
-            ctx.fillStyle = '#10B981';
-            ctx.font = "bold 24px sans-serif";
-            ctx.fillText(`SCORE : ${score}`, 200, 290);
-
-            // Tampon virtuel doré
-            ctx.fillStyle = 'rgba(212, 175, 55, 0.15)';
-            ctx.beginPath();
-            ctx.arc(320, 310, 35, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            ctx.fillStyle = '#D4AF37';
-            ctx.font = "9px sans-serif";
-            ctx.fillText("SUCCESS", 320, 308);
-            ctx.fillText("TOGAF EA", 320, 320);
-
-            // Date
-            ctx.fillStyle = '#7f8c8d';
-            ctx.font = "9px sans-serif";
-            ctx.textAlign = "left";
-            ctx.fillText(`Délivré le : ${date}`, 45, 345);
-            ctx.fillText("ID Vérification : #OGEA-F101-FR", 45, 358);
-
-            // Mettre à jour la balise IMG pour l'affichage mobile/tactile
-            const imgPreview = document.getElementById('badge-preview-img');
-            imgPreview.src = canvas.toDataURL("image/png");
-        }
-
-        function generateAndOpenBadge() {
-            const name = getDisplayName();
-            const scoreText = `${appState.score} / ${appState.questions.length}`;
-            const diffText = appState.selectedDifficulty;
-            const dateText = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
-
-            renderBadgeOnCanvas(name, scoreText, diffText, dateText);
-            toggleBadgeModal(true);
-        }
-
-        function renderAndOpenBadgeDirect(difficulty, score, date) {
-            const name = getDisplayName();
-            // Isoler juste la date courte pour l'esthétique
-            const shortDate = date.split(' ')[0] || date;
-            renderBadgeOnCanvas(name, score, difficulty, shortDate);
-            toggleBadgeModal(true);
-        }
-
-        function downloadBadgeImage() {
-            const canvas = document.getElementById('badge-canvas');
-            const link = document.createElement('a');
-            link.download = `Badge_TOGAF_EA_Success_${getDisplayName().replace(/\s+/g, '_')}.png`;
-            link.href = canvas.toDataURL("image/png");
-            link.click();
-            showToast("Téléchargement lancé !", "success");
-        }
-
-        async function shareBadgeProgress() {
-            const name = getDisplayName();
-            const scoreText = `${appState.score || 0} / ${(appState.questions ? appState.questions.length : 40)}`;
-            const difficulty = appState.selectedDifficulty || 'medium';
-            const dateText = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
-
-            const badgeId = crypto.randomUUID();
-            const badgeData = {
-                name: name,
-                score: scoreText,
-                difficulty: difficulty,
-                date: dateText,
-                timestamp: Date.now()
-            };
-
-            if (window.publishBadgeToCloud) {
-                showToast("Publication de votre badge sur le cloud...", "info");
-                const ok = await window.publishBadgeToCloud(badgeId, badgeData);
-                if (ok) {
-                    const shareUrl = `${window.location.origin}${window.location.pathname}?badge=${badgeId}`;
-                    document.getElementById('share-url-text').value = shareUrl;
-                    toggleBadgeModal(false);
-                    toggleShareModal(true);
-                } else {
-                    showToast("Échec de la connexion cloud. Partage impossible pour le moment.", "error");
-                }
-            } else {
-                showToast("Option de partage en ligne désactivée en mode local.", "error");
-            }
-        }
-
-        function copyShareUrl() {
-            const input = document.getElementById('share-url-text');
-            input.select();
-            document.execCommand('copy');
-            showToast("Lien copié dans le presse-papiers !", "success");
-        }
-
+        // --- DASHBOARD ANALYTICS ---
         function openDashboard() {
-            document.getElementById('welcome-screen').classList.add('hidden');
-            document.getElementById('quiz-screen').classList.add('hidden');
-            document.getElementById('result-screen').classList.add('hidden');
-            document.getElementById('dashboard-screen').classList.remove('hidden');
+            document.getElementById("welcome-screen").classList.add("hidden");
+            document.getElementById("dashboard-screen").classList.remove("hidden");
             updateDashboardUI();
         }
 
         function closeDashboard() {
-            document.getElementById('dashboard-screen').classList.add('hidden');
-            document.getElementById('welcome-screen').classList.remove('hidden');
+            document.getElementById("dashboard-screen").classList.add("hidden");
+            document.getElementById("welcome-screen").classList.remove("hidden");
         }
 
-        function resetAppToHome() {
-            appState.isExamActive = false;
-            pausedExamBackup = null;
-            document.getElementById('resume-container').classList.add('hidden');
-            document.getElementById('result-screen').classList.add('hidden');
-            document.getElementById('welcome-screen').classList.remove('hidden');
+        function updateDashboardUI() {
+            const list = attemptsHistory;
+            
+            // Calculer KPIs
+            const total = list.length;
+            document.getElementById("kpi-attempts").textContent = total;
+
+            if (total === 0) {
+                document.getElementById("kpi-avg").textContent = "0%";
+                document.getElementById("kpi-success-rate").textContent = "0%";
+                document.getElementById("kpi-best").textContent = "0/40";
+                document.getElementById("no-chart-data").classList.remove("hidden");
+                return;
+            }
+
+            document.getElementById("no-chart-data").classList.add("hidden");
+
+            const avg = list.reduce((sum, item) => sum + item.percentage, 0) / total;
+            document.getElementById("kpi-avg").textContent = `${avg.toFixed(0)}%`;
+
+            const successes = list.filter(item => item.percentage >= 60).length;
+            const rate = (successes / total) * 100;
+            document.getElementById("kpi-success-rate").textContent = `${rate.toFixed(0)}%`;
+
+            const best = Math.max(...list.map(item => item.score));
+            document.getElementById("kpi-best").textContent = `${best}/40`;
+
+            // Rendu de la liste d'historique
+            const listContainer = document.getElementById("attempts-list");
+            listContainer.innerHTML = "";
+
+            list.slice().reverse().forEach(attempt => {
+                const row = document.createElement("div");
+                row.className = "flex justify-between items-center p-3 bg-white rounded-lg border shadow-sm";
+                const dateStr = new Date(attempt.timestamp).toLocaleDateString("fr-FR", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
+                
+                row.innerHTML = `
+                    <div>
+                        <span class="font-bold">${attempt.difficulty.toUpperCase()}</span>
+                        <p class="text-xs text-gray-400 mt-0.5">${dateStr}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-bold ${attempt.percentage >= 60 ? 'text-emerald-600' : 'text-red-500'}">${attempt.score} / ${attempt.total}</span>
+                        <p class="text-xs text-gray-500 mt-0.5">${attempt.percentage.toFixed(0)}%</p>
+                    </div>
+                `;
+                listContainer.appendChild(row);
+            });
+
+            // Tracer la courbe temporelle d'évolution avec Chart.js
+            renderEvolutionChart(list);
+        }
+
+        function renderEvolutionChart(list) {
+            const ctx = document.getElementById('progress-chart-canvas').getContext('2d');
+            
+            // Détruire l'instance précédente pour éviter la superposition de canvas
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            // Prendre au maximum les 7 dernières tentatives
+            const recent = list.slice(-7);
+            const labels = recent.map((_, i) => `T${i+1}`);
+            const scores = recent.map(item => item.percentage);
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Précision (%)',
+                        data: scores,
+                        borderColor: '#0C419A',
+                        backgroundColor: 'rgba(12, 65, 154, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#006386',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            ticks: { stepSize: 20 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- GÉNÉRATEUR DE BADGE OFFICIER (CANVAS) ---
+        function toggleBadgeModal(show) {
+            document.getElementById("badge-modal").classList.toggle("hidden", !show);
+        }
+
+        function generateAndOpenBadge() {
+            const canvas = document.getElementById("badge-canvas");
+            const ctx = canvas.getContext("2d");
+
+            // 1. Fond - Design de Certificat Classique
+            ctx.fillStyle = "#E7ECF5";
+            ctx.fillRect(0, 0, 500, 500);
+
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(15, 15, 470, 470);
+
+            // Double bordure élégante
+            ctx.strokeStyle = "#0C419A";
+            ctx.lineWidth = 4;
+            ctx.strokeRect(20, 20, 460, 460);
+
+            ctx.strokeStyle = "#006386";
+            ctx.lineWidth = 1;
+            ctx.strokeRect(26, 26, 448, 448);
+
+            // Éléments de coin décoratifs
+            ctx.fillStyle = "#0C419A";
+            ctx.fillRect(20, 20, 15, 15);
+            ctx.fillRect(465, 20, 15, 15);
+            ctx.fillRect(20, 465, 15, 15);
+            ctx.fillRect(465, 465, 15, 15);
+
+            // 2. Textes & Titres
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#0C419A";
+            ctx.font = "bold 20px 'Inter', sans-serif";
+            ctx.fillText("ATTENTAT DE VALIDATION", 250, 80);
+
+            ctx.font = "12px 'Inter', sans-serif";
+            ctx.fillStyle = "#222324";
+            ctx.fillText("Félicitations attribuées à", 250, 120);
+
+            // Identité d'architecte
+            ctx.font = "bold 24px 'Inter', sans-serif";
+            ctx.fillStyle = "#006386";
+            const name = getDisplayName();
+            ctx.fillText(name, 250, 160);
+
+            // Descriptif
+            ctx.font = "14px 'Inter', sans-serif";
+            ctx.fillStyle = "#222324";
+            ctx.fillText("pour avoir accompli avec succès l'Examen d'Entraînement", 250, 210);
+
+            ctx.font = "bold 16px 'Inter', sans-serif";
+            ctx.fillStyle = "#0C419A";
+            ctx.fillText(`TOGAF EA® Part 1 - Niveau ${examDifficulty.toUpperCase()}`, 250, 240);
+
+            // Sceau Médaille Vectoriel
+            ctx.beginPath();
+            ctx.arc(250, 330, 45, 0, Math.PI * 2);
+            ctx.fillStyle = "#E7ECF5";
+            ctx.fill();
+            ctx.strokeStyle = "#0C419A";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            ctx.font = "bold 24px 'Inter', sans-serif";
+            ctx.fillStyle = "#0C419A";
+            ctx.fillText("60%", 250, 330);
+            ctx.font = "bold 10px 'Inter', sans-serif";
+            ctx.fillText("MINIMUM", 250, 350);
+
+            // Étoiles
+            ctx.font = "14px 'Inter', sans-serif";
+            ctx.fillStyle = "#D97706";
+            ctx.fillText("★ ★ ★ ★ ★", 250, 280);
+
+            // Signatures & Date
+            ctx.font = "italic 11px 'Inter', sans-serif";
+            ctx.fillStyle = "#4B5563";
+            const dateStr = new Date().toLocaleDateString("fr-FR", {day: "numeric", month: "long", year: "numeric"});
+            ctx.fillText(`Fait le ${dateStr}`, 130, 420);
+            ctx.fillText("Comité de validation", 370, 420);
+
+            ctx.beginPath();
+            ctx.moveTo(70, 425);
+            ctx.lineTo(190, 425);
+            ctx.moveTo(310, 425);
+            ctx.lineTo(430, 425);
+            ctx.strokeStyle = "#D1D5DB";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Créer la prévisualisation image
+            const dataUrl = canvas.toDataURL("image/png");
+            document.getElementById("badge-preview-img").src = dataUrl;
+            toggleBadgeModal(true);
+        }
+
+        function downloadBadgeImage() {
+            const canvas = document.getElementById("badge-canvas");
+            const link = document.createElement('a');
+            link.download = `TOGAF_Validation_Badge_${examDifficulty}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        }
+
+        function shareBadgeProgress() {
+            // Dans un iFrame sandboxé, nous simulons un lien cloud enregistré
+            const shareUrl = `${window.location.origin}${window.location.pathname}?verify=${Date.now()}`;
+            document.getElementById("share-url-text").value = shareUrl;
+            document.getElementById("share-modal").classList.remove("hidden");
+        }
+
+        function toggleShareModal(show) {
+            document.getElementById("share-modal").classList.toggle("hidden", !show);
+        }
+
+        function copyShareUrl() {
+            const input = document.getElementById("share-url-text");
+            input.select();
+            document.execCommand('copy');
+            showToast("Lien de partage copié dans le presse-papiers !", "success");
+        }
+
+        // --- EXPORTS MARKDOWN (COPIES DE NOTES) ---
+        function copyQuestionMarkdown() {
+            const q = questions[currentQuestionIndex];
+            const markdown = `### TOGAF® Examen Révision - Question ${currentQuestionIndex + 1}
+**Question :** ${q.q}
+
+**Options :**
+${q.options.map((opt, i) => `- [${i === q.correct ? 'x' : ' '}] ${opt}`).join('\n')}
+
+**Bonne réponse :** Option ${q.correct + 1}
+**Raisonnement :** ${q.explanation}
+
+*Généré avec le Simulateur d'Examen Blanc d'Architecture TOGAF OGEA-F101*`;
+
+            copyTextToClipboard(markdown);
+            showToast("Question formatée copiée au format Markdown !", "success");
+        }
+
+        function copyResultsMarkdown() {
+            let correctCount = 0;
+            let questionsListMd = "";
+
+            questions.forEach((q, index) => {
+                const wasCorrect = (selectedAnswers[index] === q.correct);
+                if (wasCorrect) correctCount++;
+                
+                questionsListMd += `
+#### Question ${index + 1} : ${q.q}
+- Réponse sélectionnée : *${q.options[selectedAnswers[index]] || "Aucune réponse"}* ${wasCorrect ? '✅' : '❌'}
+- Bonne réponse : *${q.options[q.correct]}*
+- **Raisonnement officiel :** ${q.explanation}
+`;
+            });
+
+            const scorePercent = (correctCount / questions.length) * 100;
+            const markdown = `# Bilan d'Examen Blanc - TOGAF EA® Foundation OGEA-F101
+**Niveau :** ${examDifficulty.toUpperCase()}
+**Date de session :** ${new Date().toLocaleDateString("fr-FR")}
+**Score final :** ${correctCount} / ${questions.length} (${scorePercent.toFixed(1)}%)
+**Statut :** ${scorePercent >= 60 ? "RÉUSSI" : "À REPASSER"}
+
+---
+
+### Liste détaillée des réponses & erreurs :
+${questionsListMd}
+
+*Généré automatiquement par le Simulateur d'Examen TOGAF d'Entraînement*`;
+
+            copyTextToClipboard(markdown);
+            showToast("Bilan complet copié au format Markdown !", "success");
+        }
+
+        function copyTextToClipboard(text) {
+            const temp = document.createElement("textarea");
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand("copy");
+            document.body.removeChild(temp);
+        }
+
+        // --- REPRODUCTION DES DIAGRAMMES VECTORIELS ---
+        function getArchitecturalSVG(key) {
+            if (key === 'admCycle') {
+                return `
+                <svg viewBox="0 0 400 400" class="w-full h-full max-h-72">
+                    <circle cx="200" cy="200" r="160" fill="none" stroke="#E7ECF5" stroke-width="40"/>
+                    <circle cx="200" cy="200" r="160" fill="none" stroke="#0C419A" stroke-width="2" stroke-dasharray="8 8"/>
+                    <circle cx="200" cy="200" r="45" fill="#0C419A"/>
+                    <text x="200" y="195" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="white" text-anchor="middle">GESTION</text>
+                    <text x="200" y="210" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="white" text-anchor="middle">EXIGENCES</text>
+                    <circle cx="200" cy="40" r="22" fill="#006386"/>
+                    <text x="200" y="44" font-family="'Inter', sans-serif" font-size="11" font-weight="bold" fill="white" text-anchor="middle">PRÉLIM</text>
+                    <circle cx="313" cy="113" r="20" fill="#E7ECF5" stroke="#006386" stroke-width="2"/>
+                    <text x="313" y="117" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="#0C419A" text-anchor="middle">A</text>
+                    <circle cx="360" cy="200" r="20" fill="#E7ECF5" stroke="#006386" stroke-width="2"/>
+                    <text x="360" y="204" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="#0C419A" text-anchor="middle">B</text>
+                    <circle cx="313" cy="287" r="20" fill="#E7ECF5" stroke="#006386" stroke-width="2"/>
+                    <text x="313" y="291" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="#0C419A" text-anchor="middle">C</text>
+                    <circle cx="200" cy="360" r="20" fill="#E7ECF5" stroke="#006386" stroke-width="2"/>
+                    <text x="200" y="364" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="#0C419A" text-anchor="middle">D</text>
+                    <circle cx="87" cy="287" r="20" fill="#E7ECF5" stroke="#006386" stroke-width="2"/>
+                    <text x="87" y="291" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="#0C419A" text-anchor="middle">E</text>
+                    <circle cx="40" cy="200" r="20" fill="#E7ECF5" stroke="#006386" stroke-width="2"/>
+                    <text x="40" y="204" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="#0C419A" text-anchor="middle">F</text>
+                    <circle cx="87" cy="113" r="20" fill="#E7ECF5" stroke="#006386" stroke-width="2"/>
+                    <text x="87" y="117" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="#0C419A" text-anchor="middle">G</text>
+                    <path d="M 200 62 L 200 155 M 200 245 L 200 340 M 60 200 L 155 200 M 245 200 L 340 200" stroke="#0C419A" stroke-width="2" opacity="0.3"/>
+                </svg>`;
+            } else if (key === 'architectureCapability') {
+                return `
+                <svg viewBox="0 0 400 240" class="w-full h-full max-h-72">
+                    <rect x="10" y="10" width="380" height="220" rx="10" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="2"/>
+                    <rect x="25" y="25" width="350" height="40" rx="5" fill="#0C419A"/>
+                    <text x="200" y="49" font-family="'Inter', sans-serif" font-size="13" font-weight="bold" fill="white" text-anchor="middle">Comité de Gouvernance d'Architecture</text>
+                    <rect x="25" y="80" width="165" height="135" rx="5" fill="white" stroke="#006386" stroke-width="2"/>
+                    <text x="107" y="105" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="#006386" text-anchor="middle">Référentiel</text>
+                    <rect x="35" y="120" width="145" height="25" rx="3" fill="#E7ECF5"/>
+                    <text x="107" y="137" font-family="'Inter', sans-serif" font-size="11" fill="#0C419A" text-anchor="middle">Bibliothèque SIB</text>
+                    <rect x="35" y="155" width="145" height="25" rx="3" fill="#E7ECF5"/>
+                    <text x="107" y="172" font-family="'Inter', sans-serif" font-size="11" fill="#0C419A" text-anchor="middle">Continuum</text>
+                    <rect x="210" y="80" width="165" height="135" rx="5" fill="white" stroke="#006386" stroke-width="2"/>
+                    <text x="292" y="105" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="#006386" text-anchor="middle">Projets IT</text>
+                    <rect x="220" y="120" width="145" height="25" rx="3" fill="#FEE2E2"/>
+                    <text x="292" y="137" font-family="'Inter', sans-serif" font-size="11" fill="#EF4444" text-anchor="middle">Revue de Conformité</text>
+                    <rect x="220" y="155" width="145" height="25" rx="3" fill="#FEF3C7"/>
+                    <text x="292" y="172" font-family="'Inter', sans-serif" font-size="11" fill="#D97706" text-anchor="middle">Dérogations</text>
+                    <path d="M 190 147 L 210 147" stroke="#0C419A" stroke-width="3" fill="none"/>
+                </svg>`;
+            } else if (key === 'contentFramework') {
+                return `
+                <svg viewBox="0 0 400 240" class="w-full h-full max-h-72">
+                    <rect x="20" y="20" width="105" height="200" rx="8" fill="#EFF6FF" stroke="#3B82F6" stroke-width="2"/>
+                    <text x="72" y="45" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="#1D4ED8" text-anchor="middle">MÉTIER</text>
+                    <rect x="32" y="70" width="80" height="35" rx="4" fill="white" stroke="#3B82F6"/>
+                    <text x="72" y="91" font-family="'Inter', sans-serif" font-size="10" text-anchor="middle">Capacité</text>
+                    <rect x="32" y="115" width="80" height="35" rx="4" fill="white" stroke="#3B82F6"/>
+                    <text x="72" y="136" font-family="'Inter', sans-serif" font-size="10" text-anchor="middle">Flux de Valeur</text>
+                    <rect x="147" y="20" width="105" height="200" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="2"/>
+                    <text x="199" y="45" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="#047857" text-anchor="middle">SYSTÈME</text>
+                    <rect x="159" y="70" width="80" height="35" rx="4" fill="white" stroke="#10B981"/>
+                    <text x="199" y="91" font-family="'Inter', sans-serif" font-size="10" text-anchor="middle">Application</text>
+                    <rect x="159" y="115" width="80" height="35" rx="4" fill="white" stroke="#10B981"/>
+                    <text x="199" y="136" font-family="'Inter', sans-serif" font-size="10" text-anchor="middle">Données</text>
+                    <rect x="275" y="20" width="105" height="200" rx="8" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2"/>
+                    <text x="327" y="45" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="#B45309" text-anchor="middle">TECHNOLOGIE</text>
+                    <rect x="287" y="70" width="80" height="35" rx="4" fill="white" stroke="#F59E0B"/>
+                    <text x="327" y="91" font-family="'Inter', sans-serif" font-size="10" text-anchor="middle">Infrastructure</text>
+                    <rect x="287" y="115" width="80" height="35" rx="4" fill="white" stroke="#F59E0B"/>
+                    <text x="327" y="136" font-family="'Inter', sans-serif" font-size="10" text-anchor="middle">Réseau</text>
+                </svg>`;
+            }
+            return "";
         }
     </script>
 </body>
