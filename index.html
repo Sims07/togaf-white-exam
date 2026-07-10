@@ -314,7 +314,7 @@
                 <div class="card p-5 rounded-xl md:col-span-2 space-y-4 flex flex-col justify-between">
                     <div>
                         <h3 class="text-md font-bold uppercase text-[#0C419A]">Historique des Sessions</h3>
-                        <div id="attempts-list" class="space-y-3 max-h-56 overflow-y-auto pr-1 text-sm mt-3">
+                        <div id="attempts-list" class="space-y-3 max-h-72 overflow-y-auto pr-1 text-sm mt-3">
                             <p class="text-xs text-gray-400 italic">Aucune tentative enregistrée pour le moment. Lancez un examen pour voir vos résultats apparaître !</p>
                         </div>
                     </div>
@@ -432,6 +432,14 @@
         let timerInterval = null;
         let secondsRemaining = 3600; // 60 minutes
         let chartInstance = null; // Graphique Chart.js
+
+        // Contiendra les informations du badge actuellement visualisé
+        let currentBadgeData = {
+            difficulty: 'easy',
+            score: 0,
+            total: 40,
+            timestamp: Date.now()
+        };
 
         // Chemins JSON par défaut (Sauvegardés en localStorage)
         const DEFAULT_PATHS = {
@@ -555,7 +563,6 @@
 
         // --- COMMENCER L'EXAMEN ---
         function confirmAndStart() {
-            // Vérifier s'il y a déjà une session en cours d'enregistrement
             const session = localStorage.getItem("togaf_active_session");
             if (session) {
                 toggleConfirmModal(true);
@@ -924,6 +931,7 @@
             return isNaN(calculated) ? 0 : calculated;
         }
 
+        // --- STREAMING_CHUNK: Defining dashboard rendering logic... ---
         function updateDashboardUI() {
             const list = window.attemptsHistory || [];
             
@@ -970,14 +978,16 @@
             });
             document.getElementById("kpi-best").textContent = `${bestScore}/${bestTotal}`;
 
-            // Rendu de la liste d'historique
+            // Rendu de la liste d'historique avec intégration de bouton de badge rétroactif
             const listContainer = document.getElementById("attempts-list");
             listContainer.innerHTML = "";
 
             list.slice().reverse().forEach(attempt => {
                 const row = document.createElement("div");
-                row.className = "flex justify-between items-center p-3 bg-white rounded-lg border shadow-sm";
+                row.className = "flex justify-between items-center p-3 bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow duration-150";
                 const timestamp = attempt.timestamp || Date.now();
+                
+                // Formatage de la date en local sans librairie externe (RULE 1)
                 const dateStr = new Date(timestamp).toLocaleDateString("fr-FR", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
                 
                 const rawDiff = attempt.difficulty || 'non spécifiée';
@@ -988,12 +998,21 @@
 
                 row.innerHTML = `
                     <div>
-                        <span class="font-bold">${diffName}</span>
+                        <span class="font-bold text-gray-700">${diffName}</span>
                         <p class="text-xs text-gray-400 mt-0.5">${dateStr}</p>
                     </div>
-                    <div class="text-right">
-                        <span class="font-bold ${pct >= 60 ? 'text-emerald-600' : 'text-red-500'}">${score} / ${itemTotal}</span>
-                        <p class="text-xs text-gray-500 mt-0.5">${pct.toFixed(0)}%</p>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right">
+                            <span class="font-bold ${pct >= 60 ? 'text-emerald-600' : 'text-red-500'}">${score} / ${itemTotal}</span>
+                            <p class="text-xs text-gray-500 mt-0.5">${pct.toFixed(0)}%</p>
+                        </div>
+                        ${pct >= 60 ? `
+                            <button onclick="generateAndOpenBadge('${attempt.difficulty}', ${score}, ${itemTotal}, ${timestamp})" 
+                                    class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg border border-amber-200 text-xs font-bold flex items-center gap-1 transition" 
+                                    title="Générer et visualiser le Badge Officiel pour ce passage">
+                                🥇 Badge
+                            </button>
+                        ` : ''}
                     </div>
                 `;
                 listContainer.appendChild(row);
@@ -1008,7 +1027,6 @@
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             
-            // Détruire l'instance précédente pour éviter la superposition de canvas
             if (chartInstance) {
                 chartInstance.destroy();
             }
@@ -1018,7 +1036,6 @@
             const labels = recent.map((_, i) => `T${i+1}`);
             const scores = recent.map(item => getSafePercentage(item));
 
-            // Protection défensive si l'import de Chart.js n'est pas encore finalisé
             if (typeof Chart === 'undefined') {
                 console.warn("Chart.js n'est pas encore chargé ou disponible.");
                 return;
@@ -1056,12 +1073,26 @@
             });
         }
 
-        // --- GÉNÉRATEUR DE BADGE EN CANVAS ---
+        // --- GÉNÉRATEUR DE BADGE EN CANVAS DYNAMIQUE ---
+        // --- STREAMING_CHUNK: Defining badge generator and canvas context... ---
         function toggleBadgeModal(show) {
             document.getElementById("badge-modal").classList.toggle("hidden", !show);
         }
 
-        function generateAndOpenBadge() {
+        function generateAndOpenBadge(diff, score, total, timestamp) {
+            // Configuration de l'état actif du badge en cours de rendu
+            const activeDiff = diff || examDifficulty;
+            const activeScore = score !== undefined ? score : (parseInt(document.getElementById("final-score").textContent) || 0);
+            const activeTotal = total !== undefined ? total : (parseInt(document.getElementById("final-total").textContent) || 40);
+            const activeTimestamp = timestamp || Date.now();
+
+            currentBadgeData = {
+                difficulty: activeDiff,
+                score: activeScore,
+                total: activeTotal,
+                timestamp: activeTimestamp
+            };
+
             const canvas = document.getElementById("badge-canvas");
             const ctx = canvas.getContext("2d");
 
@@ -1111,7 +1142,7 @@
 
             ctx.font = "bold 16px 'Inter', sans-serif";
             ctx.fillStyle = "#0C419A";
-            ctx.fillText(`TOGAF EA® Part 1 - Niveau ${examDifficulty.toUpperCase()}`, 250, 240);
+            ctx.fillText(`TOGAF EA® Part 1 - Niveau ${activeDiff.toUpperCase()}`, 250, 240);
 
             // Sceau Médaille Vectoriel
             ctx.beginPath();
@@ -1122,11 +1153,13 @@
             ctx.lineWidth = 4;
             ctx.stroke();
 
+            // Affichage dynamique de la performance réelle obtenue dans la médaille
+            const percentValue = Math.round((activeScore / activeTotal) * 100);
             ctx.font = "bold 24px 'Inter', sans-serif";
             ctx.fillStyle = "#0C419A";
-            ctx.fillText("60%", 250, 330);
+            ctx.fillText(`${percentValue}%`, 250, 330);
             ctx.font = "bold 10px 'Inter', sans-serif";
-            ctx.fillText("MINIMUM", 250, 350);
+            ctx.fillText("OBTENU", 250, 348);
 
             // Étoiles
             ctx.font = "14px 'Inter', sans-serif";
@@ -1136,7 +1169,7 @@
             // Signatures & Date
             ctx.font = "italic 11px 'Inter', sans-serif";
             ctx.fillStyle = "#4B5563";
-            const dateStr = new Date().toLocaleDateString("fr-FR", {day: "numeric", month: "long", year: "numeric"});
+            const dateStr = new Date(activeTimestamp).toLocaleDateString("fr-FR", {day: "numeric", month: "long", year: "numeric"});
             ctx.fillText(`Fait le ${dateStr}`, 130, 420);
             ctx.fillText("Comité de validation", 370, 420);
 
@@ -1149,7 +1182,7 @@
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            // Créer la prévisualisation image
+            // Rendu de la prévisualisation graphique
             const dataUrl = canvas.toDataURL("image/png");
             document.getElementById("badge-preview-img").src = dataUrl;
             toggleBadgeModal(true);
@@ -1158,7 +1191,7 @@
         function downloadBadgeImage() {
             const canvas = document.getElementById("badge-canvas");
             const link = document.createElement('a');
-            link.download = `TOGAF_Validation_Badge_${examDifficulty}.png`;
+            link.download = `TOGAF_Validation_Badge_${currentBadgeData.difficulty}_${currentBadgeData.score}_sur_${currentBadgeData.total}.png`;
             link.href = canvas.toDataURL("image/png");
             link.click();
         }
@@ -1166,12 +1199,12 @@
         // Partage sans base de données : compression des variables dans l'URL (Format autonome)
         function shareBadgeProgress() {
             const nameEnc = encodeURIComponent(getDisplayName());
-            const score = document.getElementById("final-score").textContent;
-            const total = document.getElementById("final-total").textContent;
-            const diff = examDifficulty;
-            const dateStr = encodeURIComponent(new Date().toLocaleDateString("fr-FR", {day: "numeric", month: "long", year: "numeric"}));
+            const score = currentBadgeData.score;
+            const total = currentBadgeData.total;
+            const diff = currentBadgeData.difficulty;
+            const dateStr = encodeURIComponent(new Date(currentBadgeData.timestamp).toLocaleDateString("fr-FR", {day: "numeric", month: "long", year: "numeric"}));
             
-            // Construction de l'URL avec les variables chiffrées/codées
+            // Construction de l'URL avec les variables codées
             const shareUrl = `${window.location.origin}${window.location.pathname}?verify_name=${nameEnc}&verify_score=${score}&verify_total=${total}&verify_diff=${diff}&verify_date=${dateStr}`;
             
             document.getElementById("share-url-text").value = shareUrl;
@@ -1183,20 +1216,18 @@
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('verify_name')) {
                 const name = decodeURIComponent(urlParams.get('verify_name'));
-                const score = urlParams.get('verify_score');
-                const total = urlParams.get('verify_total');
-                const diff = urlParams.get('verify_diff');
+                const score = parseInt(urlParams.get('verify_score')) || 0;
+                const total = parseInt(urlParams.get('verify_total')) || 40;
+                const diff = urlParams.get('verify_diff') || 'easy';
                 const date = decodeURIComponent(urlParams.get('verify_date'));
 
-                // Forcer le nom à s'inscrire temporairement pour le canvas
+                // Configurer temporairement l'affichage pour le badge partagé
                 localStorage.setItem("togaf_user_display_name", name);
-                examDifficulty = diff;
                 
                 showToast(`Vérification du Badge de réussite pour ${name} !`, "success");
                 
                 setTimeout(() => {
-                    generateAndOpenBadge();
-                    // Nettoyer l'URL sans recharger la page
+                    generateAndOpenBadge(diff, score, total, Date.now());
                     window.history.replaceState({}, document.title, window.location.pathname);
                 }, 800);
             }
