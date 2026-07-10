@@ -1000,6 +1000,17 @@
             document.getElementById("welcome-screen").classList.remove("hidden");
         }
 
+        // Sécurise la lecture du pourcentage pour éviter le NaN% (vu sur l'image_1b7913.png)
+        function getSafePercentage(item) {
+            if (item.percentage !== undefined && item.percentage !== null && !isNaN(item.percentage)) {
+                return item.percentage;
+            }
+            // Si absent, recalcul dynamique basé sur le score et le total de questions enregistrées
+            const score = item.score !== undefined ? item.score : 0;
+            const total = item.total || 40;
+            return (score / total) * 100;
+        }
+
         function updateDashboardUI() {
             const list = attemptsHistory;
             
@@ -1017,15 +1028,18 @@
 
             document.getElementById("no-chart-data").classList.add("hidden");
 
-            const avg = list.reduce((sum, item) => sum + item.percentage, 0) / total;
+            // Somme sécurisée via le helper rétrocompatible
+            const avg = list.reduce((sum, item) => sum + getSafePercentage(item), 0) / total;
             document.getElementById("kpi-avg").textContent = `${avg.toFixed(0)}%`;
 
-            const successes = list.filter(item => item.percentage >= 60).length;
+            const successes = list.filter(item => getSafePercentage(item) >= 60).length;
             const rate = (successes / total) * 100;
             document.getElementById("kpi-success-rate").textContent = `${rate.toFixed(0)}%`;
 
-            const best = Math.max(...list.map(item => item.score));
-            document.getElementById("kpi-best").textContent = `${best}/40`;
+            const best = Math.max(...list.map(item => item.score !== undefined ? item.score : 0));
+            // Recherche adaptative du nombre de questions de la tentative maximale
+            const bestTotal = list.find(item => item.score === best)?.total || 40;
+            document.getElementById("kpi-best").textContent = `${best}/${bestTotal}`;
 
             // Rendu de la liste d'historique
             const listContainer = document.getElementById("attempts-list");
@@ -1034,16 +1048,23 @@
             list.slice().reverse().forEach(attempt => {
                 const row = document.createElement("div");
                 row.className = "flex justify-between items-center p-3 bg-white rounded-lg border shadow-sm";
-                const dateStr = new Date(attempt.timestamp).toLocaleDateString("fr-FR", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
+                const timestamp = attempt.timestamp || Date.now();
+                const dateStr = new Date(timestamp).toLocaleDateString("fr-FR", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
                 
+                // Prévention des plantages si la propriété 'difficulty' n'existe pas sur vos anciennes tentatives
+                const diffName = (attempt.difficulty || 'non spécifiée').toUpperCase();
+                const pct = getSafePercentage(attempt);
+                const score = attempt.score !== undefined ? attempt.score : 0;
+                const itemTotal = attempt.total || 40;
+
                 row.innerHTML = `
                     <div>
-                        <span class="font-bold">${attempt.difficulty.toUpperCase()}</span>
+                        <span class="font-bold">${diffName}</span>
                         <p class="text-xs text-gray-400 mt-0.5">${dateStr}</p>
                     </div>
                     <div class="text-right">
-                        <span class="font-bold ${attempt.percentage >= 60 ? 'text-emerald-600' : 'text-red-500'}">${attempt.score} / ${attempt.total}</span>
-                        <p class="text-xs text-gray-500 mt-0.5">${attempt.percentage.toFixed(0)}%</p>
+                        <span class="font-bold ${pct >= 60 ? 'text-emerald-600' : 'text-red-500'}">${score} / ${itemTotal}</span>
+                        <p class="text-xs text-gray-500 mt-0.5">${pct.toFixed(0)}%</p>
                     </div>
                 `;
                 listContainer.appendChild(row);
@@ -1054,7 +1075,9 @@
         }
 
         function renderEvolutionChart(list) {
-            const ctx = document.getElementById('progress-chart-canvas').getContext('2d');
+            const canvas = document.getElementById('progress-chart-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
             
             // Détruire l'instance précédente pour éviter la superposition de canvas
             if (chartInstance) {
@@ -1064,7 +1087,13 @@
             // Prendre au maximum les 7 dernières tentatives
             const recent = list.slice(-7);
             const labels = recent.map((_, i) => `T${i+1}`);
-            const scores = recent.map(item => item.percentage);
+            const scores = recent.map(item => getSafePercentage(item)); // Sécurisation ici aussi
+
+            // Protection défensive si l'import de Chart.js n'est pas encore finalisé
+            if (typeof Chart === 'undefined') {
+                console.warn("Chart.js n'est pas encore chargé ou disponible.");
+                return;
+            }
 
             chartInstance = new Chart(ctx, {
                 type: 'line',
