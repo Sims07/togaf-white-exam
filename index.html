@@ -403,7 +403,7 @@
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-center">
             <h3 class="text-lg font-bold text-[#0C419A]">🔗 Lien de Partage Public Créé</h3>
             <p class="text-sm text-gray-600">
-                Votre réussite est maintenant enregistrée sur le cloud. Copiez ce lien de vérification officiel pour le partager avec vos contacts :
+                Voici votre lien de vérification officiel autonome. Vos contacts pourront voir votre badge directement sans base de données tierce :
             </p>
             <div class="flex gap-2">
                 <input type="text" id="share-url-text" readonly class="w-full p-2 border rounded-lg text-xs font-mono bg-gray-50">
@@ -417,100 +417,12 @@
 
     <!-- Footer -->
     <footer class="w-full text-center py-4 border-t text-xs text-gray-400 bg-[#F9F9F9]">
-        TOGAF® Enterprise Architecture Simulator (OGEA-F101) - Entraînement en Français
+        TOGAF® Enterprise Architecture Simulator (OGEA-F101) - Entraînement en Français (100% Local)
     </footer>
 
     <!-- Script de l'application -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, addDoc, collection, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Configuration Globale Firebase
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'togaf-sim-default';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        let db = null;
-        let auth = null;
-        let userOnline = false;
-
-        // Tenter d'initialiser Firebase
-        async function initFirebase() {
-            if (!firebaseConfig) {
-                console.log("Firebase config not available. Running in local fallback mode (localStorage).");
-                loadAttemptsFromLocalStorage();
-                return;
-            }
-
-            try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                // Priorité à l'auth par token d'intégration avant anonyme (RULE 3)
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                userOnline = true;
-                console.log("Firebase connected successfully as uid:", auth.currentUser.uid);
-                await loadAttemptsFromFirestore();
-            } catch (error) {
-                console.error("Firebase connection error. Falling back to offline mode:", error);
-                loadAttemptsFromLocalStorage();
-            }
-        }
-
-        // Charger l'historique depuis Firestore
-        async function loadAttemptsFromFirestore() {
-            if (!userOnline || !db) return;
-            try {
-                // RULE 1: Utilisation obligatoire du chemin strict requis par l'environnement
-                const colRef = collection(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'attempts');
-                const snapshot = await getDocs(colRef);
-                const items = [];
-                snapshot.forEach(doc => {
-                    items.push(doc.data());
-                });
-                // Trier les essais par timestamp en mémoire JS locale (pour respecter la RULE 2 - Pas de orderby)
-                items.sort((a, b) => a.timestamp - b.timestamp);
-                window.attemptsHistory = items;
-                updateDashboardUI();
-            } catch (err) {
-                console.error("Erreur de chargement Firestore, chargement local de secours:", err);
-                loadAttemptsFromLocalStorage();
-            }
-        }
-
-        // Sauvegarder une tentative d'examen
-        async function saveAttempt(attempt) {
-            window.attemptsHistory.push(attempt);
-            localStorage.setItem("togaf_attempts_history", JSON.stringify(window.attemptsHistory));
-            updateDashboardUI();
-
-            if (userOnline && db && auth.currentUser) {
-                try {
-                    const colRef = collection(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'attempts');
-                    await addDoc(colRef, attempt);
-                    showToast("Historique sauvegardé sur votre compte cloud d'entraînement !", "success");
-                } catch (err) {
-                    console.error("Échec de sauvegarde sur Firestore :", err);
-                }
-            }
-        }
-
-        window.saveAttemptToDatabase = saveAttempt;
-        window.addEventListener('DOMContentLoaded', () => {
-            initFirebase();
-        });
-    </script>
-
     <script>
-        // Configuration globale et variables d'état de l'application
-        let attemptsHistory = [];
+        window.attemptsHistory = [];
         let questions = [];
         let currentQuestionIndex = 0;
         let selectedAnswers = {}; // Associe l'index de la question à l'index de la réponse utilisateur
@@ -532,7 +444,9 @@
         window.onload = function() {
             loadConfigPaths();
             loadDisplayName();
+            loadAttemptsFromLocalStorage(); 
             checkAndRenderResumeButton();
+            checkAndRenderSharedBadge();
         };
 
         // --- GESTION DE LA CONFIGURATION DES CHEMINS ---
@@ -581,7 +495,7 @@
         }
 
         function getDisplayName() {
-            return localStorage.getItem("togaf_user_display_name")?.trim() || "Architecte certifié d'entraînement";
+            return localStorage.getItem("togaf_user_display_name")?.trim() || "Architecte d'Entreprise";
         }
 
         // --- SELECTION DE LA DIFFICULTE & MODE ---
@@ -694,7 +608,7 @@
 
             } catch (err) {
                 console.error("Échec de chargement du JSON :", err);
-                showToast(`Impossible de charger l'examen (${examDifficulty}). Veuillez vérifier votre chemin réseau ou d'accès local dans le menu Configuration ⚙️.`, "error");
+                showToast(`Impossible de charger l'examen (${examDifficulty.toUpperCase()}). Veuillez vérifier le chemin local dans le menu Configuration ⚙️.`, "error");
             }
         }
 
@@ -964,15 +878,9 @@
                 percentage: percentage
             };
 
-            if (typeof window.saveAttemptToDatabase === "function") {
-                window.saveAttemptToDatabase(attempt);
-            } else {
-                // Secours en mémoire locale si Firebase n'est pas encore prêt
-                attemptsHistory.push(attempt);
-                localStorage.setItem("togaf_attempts_history", JSON.stringify(attemptsHistory));
-                updateDashboardUI();
-            }
-
+            window.attemptsHistory.push(attempt);
+            localStorage.setItem("togaf_attempts_history", JSON.stringify(window.attemptsHistory));
+            updateDashboardUI();
             checkAndRenderResumeButton();
         }
 
@@ -981,10 +889,10 @@
             document.getElementById("welcome-screen").classList.remove("hidden");
         }
 
-        // --- STOCKAGE LOCAL (BACKUP) ---
+        // --- STOCKAGE LOCAL (100% OFF-LINE) ---
         function loadAttemptsFromLocalStorage() {
             const saved = localStorage.getItem("togaf_attempts_history");
-            attemptsHistory = saved ? JSON.parse(saved) : [];
+            window.attemptsHistory = saved ? JSON.parse(saved) : [];
             updateDashboardUI();
         }
 
@@ -1000,19 +908,24 @@
             document.getElementById("welcome-screen").classList.remove("hidden");
         }
 
-        // Sécurise la lecture du pourcentage pour éviter le NaN% (vu sur l'image_1b7913.png)
+        // Sécurisation complète contre les cas NaN (supporte item.percent et item.percentage)
         function getSafePercentage(item) {
+            if (!item) return 0;
             if (item.percentage !== undefined && item.percentage !== null && !isNaN(item.percentage)) {
-                return item.percentage;
+                return Number(item.percentage);
+            }
+            if (item.percent !== undefined && item.percent !== null && !isNaN(item.percent)) {
+                return Number(item.percent);
             }
             // Si absent, recalcul dynamique basé sur le score et le total de questions enregistrées
-            const score = item.score !== undefined ? item.score : 0;
-            const total = item.total || 40;
-            return (score / total) * 100;
+            const score = (item.score !== undefined && item.score !== null) ? Number(item.score) : 0;
+            const total = (item.total !== undefined && item.total !== null && item.total !== 0) ? Number(item.total) : 40;
+            const calculated = (score / total) * 100;
+            return isNaN(calculated) ? 0 : calculated;
         }
 
         function updateDashboardUI() {
-            const list = attemptsHistory;
+            const list = window.attemptsHistory || [];
             
             // Calculer KPIs
             const total = list.length;
@@ -1023,23 +936,39 @@
                 document.getElementById("kpi-success-rate").textContent = "0%";
                 document.getElementById("kpi-best").textContent = "0/40";
                 document.getElementById("no-chart-data").classList.remove("hidden");
+                
+                document.getElementById("attempts-list").innerHTML = '<p class="text-xs text-gray-400 italic">Aucune tentative enregistrée pour le moment.</p>';
+                if (chartInstance) {
+                    chartInstance.destroy();
+                    chartInstance = null;
+                }
                 return;
             }
 
             document.getElementById("no-chart-data").classList.add("hidden");
 
             // Somme sécurisée via le helper rétrocompatible
-            const avg = list.reduce((sum, item) => sum + getSafePercentage(item), 0) / total;
+            let sumOfPercentages = 0;
+            list.forEach(item => {
+                sumOfPercentages += getSafePercentage(item);
+            });
+            const avg = sumOfPercentages / total;
             document.getElementById("kpi-avg").textContent = `${avg.toFixed(0)}%`;
 
             const successes = list.filter(item => getSafePercentage(item) >= 60).length;
             const rate = (successes / total) * 100;
             document.getElementById("kpi-success-rate").textContent = `${rate.toFixed(0)}%`;
 
-            const best = Math.max(...list.map(item => item.score !== undefined ? item.score : 0));
-            // Recherche adaptative du nombre de questions de la tentative maximale
-            const bestTotal = list.find(item => item.score === best)?.total || 40;
-            document.getElementById("kpi-best").textContent = `${best}/${bestTotal}`;
+            let bestScore = 0;
+            let bestTotal = 40;
+            list.forEach(item => {
+                const s = (item.score !== undefined && item.score !== null) ? Number(item.score) : 0;
+                if (s >= bestScore) {
+                    bestScore = s;
+                    bestTotal = item.total || 40;
+                }
+            });
+            document.getElementById("kpi-best").textContent = `${bestScore}/${bestTotal}`;
 
             // Rendu de la liste d'historique
             const listContainer = document.getElementById("attempts-list");
@@ -1051,8 +980,8 @@
                 const timestamp = attempt.timestamp || Date.now();
                 const dateStr = new Date(timestamp).toLocaleDateString("fr-FR", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
                 
-                // Prévention des plantages si la propriété 'difficulty' n'existe pas sur vos anciennes tentatives
-                const diffName = (attempt.difficulty || 'non spécifiée').toUpperCase();
+                const rawDiff = attempt.difficulty || 'non spécifiée';
+                const diffName = String(rawDiff).toUpperCase();
                 const pct = getSafePercentage(attempt);
                 const score = attempt.score !== undefined ? attempt.score : 0;
                 const itemTotal = attempt.total || 40;
@@ -1087,7 +1016,7 @@
             // Prendre au maximum les 7 dernières tentatives
             const recent = list.slice(-7);
             const labels = recent.map((_, i) => `T${i+1}`);
-            const scores = recent.map(item => getSafePercentage(item)); // Sécurisation ici aussi
+            const scores = recent.map(item => getSafePercentage(item));
 
             // Protection défensive si l'import de Chart.js n'est pas encore finalisé
             if (typeof Chart === 'undefined') {
@@ -1127,7 +1056,7 @@
             });
         }
 
-        // --- GÉNÉRATEUR DE BADGE OFFICIER (CANVAS) ---
+        // --- GÉNÉRATEUR DE BADGE EN CANVAS ---
         function toggleBadgeModal(show) {
             document.getElementById("badge-modal").classList.toggle("hidden", !show);
         }
@@ -1136,7 +1065,7 @@
             const canvas = document.getElementById("badge-canvas");
             const ctx = canvas.getContext("2d");
 
-            // 1. Fond - Design de Certificat Classique
+            // Fond - Certificat Classique
             ctx.fillStyle = "#E7ECF5";
             ctx.fillRect(0, 0, 500, 500);
 
@@ -1152,24 +1081,24 @@
             ctx.lineWidth = 1;
             ctx.strokeRect(26, 26, 448, 448);
 
-            // Éléments de coin décoratifs
+            // Éléments de coin
             ctx.fillStyle = "#0C419A";
             ctx.fillRect(20, 20, 15, 15);
             ctx.fillRect(465, 20, 15, 15);
             ctx.fillRect(20, 465, 15, 15);
             ctx.fillRect(465, 465, 15, 15);
 
-            // 2. Textes & Titres
+            // Textes & Titres
             ctx.textAlign = "center";
             ctx.fillStyle = "#0C419A";
             ctx.font = "bold 20px 'Inter', sans-serif";
-            ctx.fillText("ATTENTAT DE VALIDATION", 250, 80);
+            ctx.fillText("BREVET DE RÉUSSITE", 250, 80);
 
             ctx.font = "12px 'Inter', sans-serif";
             ctx.fillStyle = "#222324";
             ctx.fillText("Félicitations attribuées à", 250, 120);
 
-            // Identité d'architecte
+            // Nom
             ctx.font = "bold 24px 'Inter', sans-serif";
             ctx.fillStyle = "#006386";
             const name = getDisplayName();
@@ -1234,11 +1163,43 @@
             link.click();
         }
 
+        // Partage sans base de données : compression des variables dans l'URL (Format autonome)
         function shareBadgeProgress() {
-            // Dans un iFrame sandboxé, nous simulons un lien cloud enregistré
-            const shareUrl = `${window.location.origin}${window.location.pathname}?verify=${Date.now()}`;
+            const nameEnc = encodeURIComponent(getDisplayName());
+            const score = document.getElementById("final-score").textContent;
+            const total = document.getElementById("final-total").textContent;
+            const diff = examDifficulty;
+            const dateStr = encodeURIComponent(new Date().toLocaleDateString("fr-FR", {day: "numeric", month: "long", year: "numeric"}));
+            
+            // Construction de l'URL avec les variables chiffrées/codées
+            const shareUrl = `${window.location.origin}${window.location.pathname}?verify_name=${nameEnc}&verify_score=${score}&verify_total=${total}&verify_diff=${diff}&verify_date=${dateStr}`;
+            
             document.getElementById("share-url-text").value = shareUrl;
             document.getElementById("share-modal").classList.remove("hidden");
+        }
+
+        // Vérification et affichage du badge partagé via URL autonome
+        function checkAndRenderSharedBadge() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('verify_name')) {
+                const name = decodeURIComponent(urlParams.get('verify_name'));
+                const score = urlParams.get('verify_score');
+                const total = urlParams.get('verify_total');
+                const diff = urlParams.get('verify_diff');
+                const date = decodeURIComponent(urlParams.get('verify_date'));
+
+                // Forcer le nom à s'inscrire temporairement pour le canvas
+                localStorage.setItem("togaf_user_display_name", name);
+                examDifficulty = diff;
+                
+                showToast(`Vérification du Badge de réussite pour ${name} !`, "success");
+                
+                setTimeout(() => {
+                    generateAndOpenBadge();
+                    // Nettoyer l'URL sans recharger la page
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }, 800);
+            }
         }
 
         function toggleShareModal(show) {
@@ -1313,7 +1274,7 @@ ${questionsListMd}
             document.body.removeChild(temp);
         }
 
-        // --- REPRODUCTION DES DIAGRAMMES VECTORIELS ---
+        // --- SCHÉMAS VECTORIELS ---
         function getArchitecturalSVG(key) {
             if (key === 'admCycle') {
                 return `
