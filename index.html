@@ -363,19 +363,38 @@
             <p class="text-xs text-gray-500">
                 Ajustez les URLs ou chemins d'accès locaux pour charger dynamiquement vos examens d'entraînement.
             </p>
-            <div class="space-y-3">
+            <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-gray-600 mb-1">Chemin Niveau Facile</label>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-bold text-gray-600">Niveau Facile</label>
+                        <select id="variant-easy" onchange="applyVariantPreset('easy', this.value)" class="text-xs border rounded-md p-1 bg-gray-50">
+                            <option value="v1">Variante 1 (Officielle)</option>
+                            <option value="v2">Variante 2</option>
+                        </select>
+                    </div>
                     <input type="text" id="url-easy" class="w-full p-2.5 border rounded-lg text-sm" value="./examen_blanc_togaf_ea_niveau_facile.json">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-600 mb-1">Chemin Niveau Moyen</label>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-bold text-gray-600">Niveau Moyen</label>
+                        <select id="variant-medium" onchange="applyVariantPreset('medium', this.value)" class="text-xs border rounded-md p-1 bg-gray-50">
+                            <option value="v1">Variante 1 (Officielle)</option>
+                            <option value="v2">Variante 2</option>
+                        </select>
+                    </div>
                     <input type="text" id="url-medium" class="w-full p-2.5 border rounded-lg text-sm" value="./examen_blanc_togaf_ea_niveau_moyen.json">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-600 mb-1">Chemin Niveau Difficile</label>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-bold text-gray-600">Niveau Difficile</label>
+                        <select id="variant-hard" onchange="applyVariantPreset('hard', this.value)" class="text-xs border rounded-md p-1 bg-gray-50">
+                            <option value="v1">Variante 1 (Officielle)</option>
+                            <option value="v2">Variante 2</option>
+                        </select>
+                    </div>
                     <input type="text" id="url-hard" class="w-full p-2.5 border rounded-lg text-sm" value="./examen_blanc_togaf_ea_niveau_difficile.json">
                 </div>
+                <p class="text-xs text-gray-400">💡 Choisissez une variante pour repasser l'examen avec 40 nouvelles questions, ou modifiez le chemin manuellement pour utiliser vos propres fichiers.</p>
             </div>
             <div class="flex justify-end gap-2 pt-3 border-t">
                 <button onclick="toggleConfigModal(false)" class="btn-outline px-4 py-2 rounded-lg text-sm font-medium">Annuler</button>
@@ -448,6 +467,25 @@
             hard: './examen_blanc_togaf_ea_niveau_difficile.json'
         };
 
+        // Chemins des variantes additionnelles (mêmes questions officielles, nouvelles versions pour repasser l'examen)
+        const VARIANT_PATHS = {
+            easy:   { v1: './examen_blanc_togaf_ea_niveau_facile.json',    v2: './examen_blanc_togaf_ea_niveau_facile_v2.json' },
+            medium: { v1: './examen_blanc_togaf_ea_niveau_moyen.json',     v2: './examen_blanc_togaf_ea_niveau_moyen_v2.json' },
+            hard:   { v1: './examen_blanc_togaf_ea_niveau_difficile.json', v2: './examen_blanc_togaf_ea_niveau_difficile_v2.json' }
+        };
+
+        // Applique le chemin correspondant à la variante choisie dans le menu déroulant
+        function applyVariantPreset(difficulty, variant) {
+            const inputId = difficulty === 'easy' ? 'url-easy' : (difficulty === 'medium' ? 'url-medium' : 'url-hard');
+            document.getElementById(inputId).value = VARIANT_PATHS[difficulty][variant];
+        }
+
+        // Détecte quelle variante correspond au chemin actuellement configuré (v1 par défaut si inconnu/personnalisé)
+        function detectVariant(difficulty, path) {
+            if (path === VARIANT_PATHS[difficulty].v2) return 'v2';
+            return 'v1';
+        }
+
         // Chargement initial
         window.onload = function() {
             loadConfigPaths();
@@ -466,6 +504,10 @@
             document.getElementById("url-easy").value = savedEasy;
             document.getElementById("url-medium").value = savedMedium;
             document.getElementById("url-hard").value = savedHard;
+
+            document.getElementById("variant-easy").value = detectVariant('easy', savedEasy);
+            document.getElementById("variant-medium").value = detectVariant('medium', savedMedium);
+            document.getElementById("variant-hard").value = detectVariant('hard', savedHard);
         }
 
         function saveConfigPaths() {
