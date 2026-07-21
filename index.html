@@ -380,6 +380,7 @@
                         <select id="variant-medium" onchange="applyVariantPreset('medium', this.value)" class="text-xs border rounded-md p-1 bg-gray-50">
                             <option value="v1">Variante 1 (Officielle)</option>
                             <option value="v2">Variante 2</option>
+                            <option value="v3">Variante 3</option>
                         </select>
                     </div>
                     <input type="text" id="url-medium" class="w-full p-2.5 border rounded-lg text-sm" value="./examen_blanc_togaf_ea_niveau_moyen.json">
@@ -470,7 +471,7 @@
         // Chemins des variantes additionnelles (mêmes questions officielles, nouvelles versions pour repasser l'examen)
         const VARIANT_PATHS = {
             easy:   { v1: './examen_blanc_togaf_ea_niveau_facile.json',    v2: './examen_blanc_togaf_ea_niveau_facile_v2.json' },
-            medium: { v1: './examen_blanc_togaf_ea_niveau_moyen.json',     v2: './examen_blanc_togaf_ea_niveau_moyen_v2.json' },
+            medium: { v1: './examen_blanc_togaf_ea_niveau_moyen.json',     v2: './examen_blanc_togaf_ea_niveau_moyen_v2.json', v3: './examen_blanc_togaf_ea_niveau_moyen_v3.json' },
             hard:   { v1: './examen_blanc_togaf_ea_niveau_difficile.json', v2: './examen_blanc_togaf_ea_niveau_difficile_v2.json' }
         };
 
@@ -483,6 +484,7 @@
         // Détecte quelle variante correspond au chemin actuellement configuré (v1 par défaut si inconnu/personnalisé)
         function detectVariant(difficulty, path) {
             if (path === VARIANT_PATHS[difficulty].v2) return 'v2';
+            if (VARIANT_PATHS[difficulty].v3 && path === VARIANT_PATHS[difficulty].v3) return 'v3';
             return 'v1';
         }
 
