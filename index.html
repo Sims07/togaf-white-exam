@@ -370,9 +370,10 @@
                         <select id="variant-easy" onchange="applyVariantPreset('easy', this.value)" class="text-xs border rounded-md p-1 bg-gray-50">
                             <option value="v1">Variante 1 (Officielle)</option>
                             <option value="v2">Variante 2</option>
+                            <option value="v3">Variante 3</option>
                         </select>
                     </div>
-                    <input type="text" id="url-easy" class="w-full p-2.5 border rounded-lg text-sm" value="./examen_blanc_togaf_ea_niveau_facile.json">
+                    <input type="text" id="url-easy" class="w-full p-2.5 border rounded-lg text-sm" value="./examens/facile/examen_blanc_togaf_ea_niveau_facile.json">
                 </div>
                 <div>
                     <div class="flex justify-between items-center mb-1">
@@ -383,7 +384,7 @@
                             <option value="v3">Variante 3</option>
                         </select>
                     </div>
-                    <input type="text" id="url-medium" class="w-full p-2.5 border rounded-lg text-sm" value="./examen_blanc_togaf_ea_niveau_moyen.json">
+                    <input type="text" id="url-medium" class="w-full p-2.5 border rounded-lg text-sm" value="./examens/moyen/examen_blanc_togaf_ea_niveau_moyen.json">
                 </div>
                 <div>
                     <div class="flex justify-between items-center mb-1">
@@ -391,9 +392,10 @@
                         <select id="variant-hard" onchange="applyVariantPreset('hard', this.value)" class="text-xs border rounded-md p-1 bg-gray-50">
                             <option value="v1">Variante 1 (Officielle)</option>
                             <option value="v2">Variante 2</option>
+                            <option value="v3">Variante 3</option>
                         </select>
                     </div>
-                    <input type="text" id="url-hard" class="w-full p-2.5 border rounded-lg text-sm" value="./examen_blanc_togaf_ea_niveau_difficile.json">
+                    <input type="text" id="url-hard" class="w-full p-2.5 border rounded-lg text-sm" value="./examens/difficile/examen_blanc_togaf_ea_niveau_difficile.json">
                 </div>
                 <p class="text-xs text-gray-400">💡 Choisissez une variante pour repasser l'examen avec 40 nouvelles questions, ou modifiez le chemin manuellement pour utiliser vos propres fichiers.</p>
             </div>
@@ -463,16 +465,16 @@
 
         // Chemins JSON par défaut (Sauvegardés en localStorage)
         const DEFAULT_PATHS = {
-            easy: './examen_blanc_togaf_ea_niveau_facile.json',
-            medium: './examen_blanc_togaf_ea_niveau_moyen.json',
-            hard: './examen_blanc_togaf_ea_niveau_difficile.json'
+            easy: './examens/facile/examen_blanc_togaf_ea_niveau_facile.json',
+            medium: './examens/moyen/examen_blanc_togaf_ea_niveau_moyen.json',
+            hard: './examens/difficile/examen_blanc_togaf_ea_niveau_difficile.json'
         };
 
         // Chemins des variantes additionnelles (mêmes questions officielles, nouvelles versions pour repasser l'examen)
         const VARIANT_PATHS = {
-            easy:   { v1: './examen_blanc_togaf_ea_niveau_facile.json',    v2: './examen_blanc_togaf_ea_niveau_facile_v2.json' },
-            medium: { v1: './examen_blanc_togaf_ea_niveau_moyen.json',     v2: './examen_blanc_togaf_ea_niveau_moyen_v2.json', v3: './examen_blanc_togaf_ea_niveau_moyen_v3.json' },
-            hard:   { v1: './examen_blanc_togaf_ea_niveau_difficile.json', v2: './examen_blanc_togaf_ea_niveau_difficile_v2.json' }
+            easy:   { v1: './examens/facile/examen_blanc_togaf_ea_niveau_facile.json',    v2: './examens/facile/examen_blanc_togaf_ea_niveau_facile_v2.json', v3: './examens/facile/examen_blanc_togaf_ea_niveau_facile_v3.json' },
+            medium: { v1: './examens/moyen/examen_blanc_togaf_ea_niveau_moyen.json',     v2: './examens/moyen/examen_blanc_togaf_ea_niveau_moyen_v2.json', v3: './examens/moyen/examen_blanc_togaf_ea_niveau_moyen_v3.json' },
+            hard:   { v1: './examens/difficile/examen_blanc_togaf_ea_niveau_difficile.json', v2: './examens/difficile/examen_blanc_togaf_ea_niveau_difficile_v2.json', v3: './examens/difficile/examen_blanc_togaf_ea_niveau_difficile_v3.json' }
         };
 
         // Applique le chemin correspondant à la variante choisie dans le menu déroulant
@@ -488,8 +490,40 @@
             return 'v1';
         }
 
+        // Migration automatique : si un ancien chemin "à plat" (racine du dépôt) est détecté
+        // dans le localStorage d'un utilisateur ayant déjà utilisé l'app avant la réorganisation
+        // en sous-dossiers /examens/facile, /examens/moyen, /examens/difficile, on le corrige silencieusement.
+        function migrateLegacyPaths() {
+            const legacyToNew = {
+                easy: {
+                    './examen_blanc_togaf_ea_niveau_facile.json': DEFAULT_PATHS.easy,
+                    './examen_blanc_togaf_ea_niveau_facile_v2.json': VARIANT_PATHS.easy.v2,
+                    './examen_blanc_togaf_ea_niveau_facile_v3.json': VARIANT_PATHS.easy.v3
+                },
+                medium: {
+                    './examen_blanc_togaf_ea_niveau_moyen.json': DEFAULT_PATHS.medium,
+                    './examen_blanc_togaf_ea_niveau_moyen_v2.json': VARIANT_PATHS.medium.v2,
+                    './examen_blanc_togaf_ea_niveau_moyen_v3.json': VARIANT_PATHS.medium.v3
+                },
+                hard: {
+                    './examen_blanc_togaf_ea_niveau_difficile.json': DEFAULT_PATHS.hard,
+                    './examen_blanc_togaf_ea_niveau_difficile_v2.json': VARIANT_PATHS.hard.v2,
+                    './examen_blanc_togaf_ea_niveau_difficile_v3.json': VARIANT_PATHS.hard.v3
+                }
+            };
+
+            ['easy', 'medium', 'hard'].forEach(difficulty => {
+                const key = `togaf_url_${difficulty}`;
+                const current = localStorage.getItem(key);
+                if (current && legacyToNew[difficulty][current]) {
+                    localStorage.setItem(key, legacyToNew[difficulty][current]);
+                }
+            });
+        }
+
         // Chargement initial
         window.onload = function() {
+            migrateLegacyPaths();
             loadConfigPaths();
             loadDisplayName();
             loadAttemptsFromLocalStorage(); 
