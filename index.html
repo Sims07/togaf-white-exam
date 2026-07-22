@@ -176,10 +176,14 @@
             </div>
 
             <!-- Lancer -->
-            <div class="pt-4">
-                <button id="start-exam-btn" onclick="confirmAndStart()" class="w-full py-4 rounded-xl font-bold text-lg btn-primary shadow-md">
+            <div class="pt-4 space-y-2">
+                <button id="start-exam-btn" onclick="confirmAndStart('new')" class="w-full py-4 rounded-xl font-bold text-lg btn-primary shadow-md">
                     Commencer un nouvel examen
                 </button>
+                <button id="start-random-exam-btn" onclick="confirmAndStart('random')" class="w-full py-3 rounded-xl font-bold btn-outline shadow-sm flex items-center justify-center gap-2">
+                    🎲 Examen Aléatoire (mélange des variantes, proportions thématiques respectées)
+                </button>
+                <p class="text-xs text-gray-400 text-center">Pioche 40 questions parmi toutes les variantes disponibles du niveau choisi, en conservant la répartition par thématique (Phases ADM, Gouvernance, Référentiel, Métamodèle...).</p>
             </div>
         </div>
 
@@ -415,7 +419,7 @@
             </p>
             <div class="flex justify-end gap-2 pt-3 border-t">
                 <button onclick="toggleConfirmModal(false)" class="btn-outline px-4 py-2 rounded-lg text-sm font-medium">Retourner à l'examen</button>
-                <button onclick="forceStartNewExam()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition">Écraser et lancer</button>
+                <button onclick="executeConfirmedStart()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition">Écraser et lancer</button>
             </div>
         </div>
     </div>
@@ -640,12 +644,15 @@
         }
 
         // --- COMMENCER L'EXAMEN ---
-        function confirmAndStart() {
+        let pendingStartAction = 'new'; // 'new' ou 'random'
+
+        function confirmAndStart(mode) {
+            pendingStartAction = mode || 'new';
             const session = localStorage.getItem("togaf_active_session");
             if (session) {
                 toggleConfirmModal(true);
             } else {
-                forceStartNewExam();
+                executeConfirmedStart();
             }
         }
 
@@ -653,8 +660,36 @@
             document.getElementById("confirm-modal").classList.toggle("hidden", !show);
         }
 
-        async function forceStartNewExam() {
+        function executeConfirmedStart() {
             toggleConfirmModal(false);
+            if (pendingStartAction === 'random') {
+                forceStartRandomExam();
+            } else {
+                forceStartNewExam();
+            }
+        }
+
+        // Initialise l'état commun et affiche l'écran de quiz, une fois les questions prêtes (peu importe leur origine)
+        function beginExamWithQuestions(data) {
+            questions = data;
+            currentQuestionIndex = 0;
+            selectedAnswers = {};
+            validatedQuestions = {};
+            secondsRemaining = 3600;
+
+            document.getElementById("welcome-screen").classList.add("hidden");
+            document.getElementById("quiz-screen").classList.remove("hidden");
+            document.getElementById("result-screen").classList.add("hidden");
+
+            const badge = document.getElementById("quiz-difficulty-badge");
+            badge.textContent = examDifficulty === 'easy' ? '🟢 Facile' : examDifficulty === 'medium' ? '🟡 Moyen' : '🔴 Difficile';
+
+            startTimer();
+            renderQuestion();
+            saveSessionProgress();
+        }
+
+        async function forceStartNewExam() {
             const path = getActivePath(examDifficulty);
             
             showToast("Chargement de l'examen d'architecture...", "info");
@@ -670,30 +705,135 @@
                     throw new Error("Le format du fichier JSON est invalide ou vide.");
                 }
 
-                // Initialiser l'état
-                questions = data;
-                currentQuestionIndex = 0;
-                selectedAnswers = {};
-                validatedQuestions = {};
-                secondsRemaining = 3600;
-
-                // Cacher l'accueil, afficher le quiz
-                document.getElementById("welcome-screen").classList.add("hidden");
-                document.getElementById("quiz-screen").classList.remove("hidden");
-                document.getElementById("result-screen").classList.add("hidden");
-
-                // Configurer le Badge de difficulté
-                const badge = document.getElementById("quiz-difficulty-badge");
-                badge.textContent = examDifficulty === 'easy' ? '🟢 Facile' : examDifficulty === 'medium' ? '🟡 Moyen' : '🔴 Difficile';
-
-                // Lancer le chronomètre
-                startTimer();
-                renderQuestion();
-                saveSessionProgress();
+                beginExamWithQuestions(data);
 
             } catch (err) {
                 console.error("Échec de chargement du JSON :", err);
                 showToast(`Impossible de charger l'examen (${examDifficulty.toUpperCase()}). Veuillez vérifier le chemin local dans le menu Configuration ⚙️.`, "error");
+            }
+        }
+
+        // --- EXAMEN ALÉATOIRE (mélange de toutes les variantes disponibles, proportions thématiques respectées) ---
+
+        // Règles de classification par mots-clés, dans l'ordre de priorité (la première correspondance l'emporte)
+        const THEME_RULES = [
+            { theme: "Gouvernance & Conformité", keywords: ["comité d'architecture", "conformité", "dérogation", "dispensation", "contrat d'architecture", "gouvernance", "audit"] },
+            { theme: "Référentiel & Continuum", keywords: ["continuum", "référentiel", "standards information base", "bibliothèque de référence", "paysage d'architecture", "journal de gouvernance", "enterprise continuum"] },
+            { theme: "Métamodèle & Contenu", keywords: ["capacité business", "flux de valeur", " abb", " sbb", "bloc de construction", "extension de motivation", "métamodèle", "acteur", "value stream", "building block"] },
+            { theme: "Livrables & Documents", keywords: ["document de vision", "déclaration de travail", "plan de migration", "plan de mise en œuvre", "feuille de route", "spécification des exigences", "document de définition", "matrice des écarts", "registre des risques", "demande de travail"] },
+            { theme: "Parties Prenantes & Vues", keywords: ["partie prenante", "stakeholder", "point de vue", "viewpoint", "vue (view)", "grille pouvoir"] },
+            { theme: "Cycle ADM & Phases", keywords: ["phase a", "phase b", "phase c", "phase d", "phase e", "phase f", "phase g", "phase h", "phase préliminaire", "cycle adm", "itération", "cycle de contexte", "cycle de gouvernance", "gestion des exigences", "gestion des changements"] }
+        ];
+
+        function classifyQuestionTheme(question) {
+            if (question.theme) return question.theme; // si un jour un champ theme explicite est ajouté aux données
+            const text = (question.q + " " + (question.options ? question.options.join(" ") : "")).toLowerCase();
+            for (const rule of THEME_RULES) {
+                if (rule.keywords.some(kw => text.includes(kw))) {
+                    return rule.theme;
+                }
+            }
+            return "Fondamentaux & Terminologie";
+        }
+
+        // Récupère toutes les variantes existantes (v1/v2/v3...) pour un niveau donné, en ignorant celles qui échouent
+        async function loadAllVariantsForDifficulty(difficulty) {
+            const paths = VARIANT_PATHS[difficulty] ? Object.values(VARIANT_PATHS[difficulty]) : [];
+            const currentActive = getActivePath(difficulty);
+            const uniquePaths = Array.from(new Set([...paths, currentActive]));
+
+            const results = await Promise.allSettled(uniquePaths.map(p => fetch(p).then(r => {
+                if (!r.ok) throw new Error("HTTP " + r.status);
+                return r.json();
+            })));
+
+            let combined = [];
+            results.forEach(res => {
+                if (res.status === 'fulfilled' && Array.isArray(res.value)) {
+                    combined = combined.concat(res.value);
+                }
+            });
+
+            // Dédoublonnage sur la base de l'énoncé exact (au cas où une variante personnalisée dupliquerait une variante standard)
+            const seen = new Set();
+            const deduped = [];
+            combined.forEach(q => {
+                if (q && q.q && !seen.has(q.q)) {
+                    seen.add(q.q);
+                    deduped.push(q);
+                }
+            });
+            return deduped;
+        }
+
+        function shuffleArray(arr) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        // Construit un examen de targetCount questions en respectant la proportion de chaque thématique dans le pool combiné
+        function buildRandomExam(pool, targetCount = 40) {
+            if (pool.length <= targetCount) {
+                return shuffleArray(pool);
+            }
+
+            const byTheme = {};
+            pool.forEach(q => {
+                const theme = classifyQuestionTheme(q);
+                if (!byTheme[theme]) byTheme[theme] = [];
+                byTheme[theme].push(q);
+            });
+
+            const themes = Object.keys(byTheme);
+            const total = pool.length;
+
+            // Quotas par la méthode du plus grand reste, pour que la somme fasse exactement targetCount
+            const rawQuotas = themes.map(t => (byTheme[t].length / total) * targetCount);
+            const flooredQuotas = rawQuotas.map(Math.floor);
+            let remaining = targetCount - flooredQuotas.reduce((a, b) => a + b, 0);
+
+            const remainders = themes.map((t, i) => ({ i, rem: rawQuotas[i] - flooredQuotas[i] }))
+                                      .sort((a, b) => b.rem - a.rem);
+            for (let k = 0; k < remaining; k++) {
+                flooredQuotas[remainders[k % remainders.length].i]++;
+            }
+
+            let selected = [];
+            let leftover = [];
+            themes.forEach((t, i) => {
+                const shuffledTheme = shuffleArray(byTheme[t]);
+                const quota = flooredQuotas[i];
+                selected = selected.concat(shuffledTheme.slice(0, quota));
+                leftover = leftover.concat(shuffledTheme.slice(quota));
+            });
+
+            // Si certaines thématiques n'avaient pas assez de questions pour atteindre leur quota, on complète depuis le reste du pool
+            if (selected.length < targetCount) {
+                const missing = targetCount - selected.length;
+                leftover = shuffleArray(leftover);
+                selected = selected.concat(leftover.slice(0, missing));
+            }
+
+            return shuffleArray(selected.slice(0, targetCount));
+        }
+
+        async function forceStartRandomExam() {
+            showToast("Génération de l'examen aléatoire (mélange des variantes)...", "info");
+            try {
+                const pool = await loadAllVariantsForDifficulty(examDifficulty);
+                if (!pool || pool.length === 0) {
+                    throw new Error("Aucune question disponible.");
+                }
+                const randomExam = buildRandomExam(pool, 40);
+                beginExamWithQuestions(randomExam);
+                showToast(`Examen aléatoire généré à partir de ${pool.length} questions disponibles !`, "success");
+            } catch (err) {
+                console.error("Échec de génération de l'examen aléatoire :", err);
+                showToast("Impossible de générer l'examen aléatoire. Vérifiez les chemins dans le menu Configuration ⚙️.", "error");
             }
         }
 
